@@ -2,7 +2,6 @@
 
 Server Action wrapper inspired by trpc.
 
-
 ## USAGE
 
 ```sh
@@ -10,12 +9,13 @@ pnpm add @yangcurve/actions
 ```
 
 Initialize Procedures
+
 ```ts
 // procedures.ts
+import { authOptions } from '@/server/auth'
 import { prisma } from '@/server/prisma'
 import { createProcedure } from '@yangcurve/actions'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/server/auth'
 
 const createContext = async () => ({
   db: prisma,
@@ -40,12 +40,15 @@ export const protectedProcedure = procedure.use((ctx) => {
 ```
 
 Define Server Actions
+
 ```ts
 // post.ts
 'use server'
 
 import { protectedProcedure, publicProcedure } from './procedures'
 import { z } from 'zod'
+
+// post.ts
 
 export const hello = publicProcedure
   .input(z.object({ text: z.string() }))
@@ -64,14 +67,15 @@ export const create = protectedProcedure
   .mutation(async ({ ctx, input }) => {
     const newPost = ctx.db.post.create({
       data: {
-        title: input.title
-      }
+        title: input.title,
+      },
     })
     return newPost
   })
 ```
 
 Register Server Actions to one object
+
 ```ts
 // actions.ts
 import * as post from './post'
@@ -88,15 +92,17 @@ export type ActionOutput<Key extends ActionKey> = InferActionIOFromKey<'output',
 ```
 
 Create Client Side API
+
 ```ts
 // client.ts
-import { createClientApi } from "@yangcurve/actions";
-import { actions } from "./actions";
+import { actions } from './actions'
+import { createClientApi } from '@yangcurve/actions'
 
 export const api = createClientApi(actions)
 ```
 
 In Server Component:
+
 ```ts
 type NewPost = ActionOutput<'post.create'>
 const ServerComponent: React.FC = async () => {
@@ -113,6 +119,7 @@ const ServerComponent: React.FC = async () => {
 ```
 
 In client Component:
+
 ```ts
 type NewPost = ActionOutput<'post.create'>
 const ClientComponent: React.FC = () => {
