@@ -2,7 +2,7 @@ import { type z } from 'zod'
 
 export type ActionType = 'query' | 'mutation'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type Action<_ extends ActionType, Input, Output> = (input: Input) => Promise<Output>
+export type Action<_Type extends ActionType, Input, Output> = (input: Input) => Promise<Output>
 
 type Resolver<Context extends object, Input, Output> = (param: {
   ctx: Context
