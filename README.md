@@ -48,16 +48,6 @@ Define Server Actions
 import { protectedProcedure, publicProcedure } from './procedures'
 import { z } from 'zod'
 
-// post.ts
-
-// post.ts
-
-// post.ts
-
-// post.ts
-
-// post.ts
-
 export const hello = publicProcedure
   .input(z.object({ text: z.string() }))
   .query(async ({ input }) => {
