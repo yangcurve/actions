@@ -3,7 +3,7 @@ import { UndefinedInitialDataOptions, UseMutationOptions } from '@tanstack/react
 import { z } from 'zod';
 
 type ActionType = 'query' | 'mutation';
-type Action<_ extends ActionType, Input, Output> = (input: Input) => Promise<Output>;
+type Action<_Type extends ActionType, Input, Output> = (input: Input) => Promise<Output>;
 type Resolver<Context extends object, Input, Output> = (param: {
     ctx: Context;
     input: Input;
@@ -21,7 +21,7 @@ type Procedure<Context extends object> = {
     query: ActionBuilderWithoutInput<'query', Context>;
     mutation: ActionBuilderWithoutInput<'mutation', Context>;
 };
-type ProcedureBuilder = <Context extends object>(createContext: () => Promise<Context>) => Procedure<Context>;
+type ProcedureBuilder = <Context extends object>(createContext?: () => Promise<Context>) => Procedure<Context>;
 type FlattenObjectKeysWithFilter<Type extends ActionType, Obj extends Record<string, unknown>, Key = keyof Obj> = Key extends string ? Obj[Key] extends Action<infer T, never, unknown> ? T extends Type ? `${Key}` : never : Obj[Key] extends Record<string, unknown> ? `${Key}.${FlattenObjectKeysWithFilter<Type, Obj[Key]>}` : never : never;
 type FlattenObjectKeys<Obj extends Record<string, unknown>, Key = keyof Obj> = Key extends string ? Obj[Key] extends Record<string, unknown> ? `${Key}.${FlattenObjectKeys<Obj[Key]>}` : `${Key}` : never;
 type InferActionFromKey<Key extends string, As extends Record<string, unknown>> = Key extends `${infer First}.${infer Rest}` ? As[First] extends Record<string, unknown> ? InferActionFromKey<Rest, As[First]> : As[First] : Key extends `${infer Key}` ? As[Key] : never;

@@ -2,6 +2,9 @@ import { type ActionBuilder, type ActionType, type ProcedureBuilder } from './ty
 import { z } from 'zod'
 
 export const createProcedure: ProcedureBuilder = (createContext) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
+  if (!createContext) createContext = async () => ({}) as any
+
   type Context = Awaited<ReturnType<typeof createContext>>
   const getActionBuilder =
     <T extends ActionType, Schema extends z.ZodTypeAny>(

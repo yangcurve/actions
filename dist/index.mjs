@@ -28,6 +28,8 @@ var createClientApi = (actions) => {
 // src/procedure.ts
 import { z } from "zod";
 var createProcedure = (createContext) => {
+  if (!createContext)
+    createContext = async () => ({});
   const getActionBuilder = (schema) => (resolver) => async (input) => await resolver({
     ctx: await createContext(),
     input: schema.parse(input)

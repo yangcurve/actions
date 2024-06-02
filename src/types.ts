@@ -37,7 +37,7 @@ type Procedure<Context extends object> = {
   mutation: ActionBuilderWithoutInput<'mutation', Context>
 }
 export type ProcedureBuilder = <Context extends object>(
-  createContext: () => Promise<Context>,
+  createContext?: () => Promise<Context>,
 ) => Procedure<Context>
 
 export type FlattenObjectKeysWithFilter<
