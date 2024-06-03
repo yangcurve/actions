@@ -42,18 +42,15 @@ var createClientApi = (actions) => {
   const getAction = (actionKey) => import_lodash.default.get(actions, actionKey);
   return {
     query: (actionKey) => (input, options) => {
-      const defaultOptions = {
-        queryKey: [...actionKey.split("."), input],
-        queryFn: () => getAction(actionKey)(input)
-      };
       return (0, import_react_query.useQuery)({
-        ...defaultOptions,
+        queryKey: [...actionKey.split("."), input],
+        queryFn: () => getAction(actionKey)(input),
         ...options
       });
     },
     mutation: (actionKey) => (options) => (0, import_react_query.useMutation)({
       mutationKey: actionKey.split("."),
-      mutationFn: (input) => getAction(actionKey)(input),
+      mutationFn: getAction(actionKey),
       ...options
     })
   };

@@ -8,18 +8,15 @@ var createClientApi = (actions) => {
   const getAction = (actionKey) => _.get(actions, actionKey);
   return {
     query: (actionKey) => (input, options) => {
-      const defaultOptions = {
-        queryKey: [...actionKey.split("."), input],
-        queryFn: () => getAction(actionKey)(input)
-      };
       return useQuery({
-        ...defaultOptions,
+        queryKey: [...actionKey.split("."), input],
+        queryFn: () => getAction(actionKey)(input),
         ...options
       });
     },
     mutation: (actionKey) => (options) => useMutation({
       mutationKey: actionKey.split("."),
-      mutationFn: (input) => getAction(actionKey)(input),
+      mutationFn: getAction(actionKey),
       ...options
     })
   };

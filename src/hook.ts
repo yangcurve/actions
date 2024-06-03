@@ -50,12 +50,9 @@ export const createClientApi = <As extends Record<string, unknown>>(actions: As)
     query:
       <Key extends QueryKey>(actionKey: Key) =>
       (input: InferActionInput<Key>, options?: UseActionQueryOptions<Key>) => {
-        const defaultOptions = {
+        return useQuery({
           queryKey: [...actionKey.split('.'), input],
           queryFn: () => getAction(actionKey)(input),
-        }
-        return useQuery({
-          ...defaultOptions,
           ...options,
         })
       },
@@ -65,7 +62,7 @@ export const createClientApi = <As extends Record<string, unknown>>(actions: As)
       (options?: UseActionMutationOptions<Key>) =>
         useMutation({
           mutationKey: actionKey.split('.'),
-          mutationFn: (input: InferActionInput<Key>) => getAction(actionKey)(input),
+          mutationFn: getAction(actionKey),
           ...options,
         }),
   }
