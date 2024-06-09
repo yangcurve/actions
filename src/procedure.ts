@@ -14,7 +14,7 @@ export const createProcedure: ProcedureBuilder = (createContext) => {
     async (input) =>
       await resolver({
         ctx: await createContext(),
-        input: schema.parse(input) as typeof input,
+        input: schema.parse(input) as z.infer<typeof schema>,
       })
 
   return {
