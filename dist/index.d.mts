@@ -8,7 +8,7 @@ type Resolver<Context extends object, Input, Output> = (param: {
     ctx: Context;
     input: Input;
 }) => Promise<Output>;
-type ActionBuilder<Type extends ActionType, Context extends object, Schema extends z.ZodType> = <Output>(resolver: Resolver<Context, z.infer<Schema>, Output>) => Action<Type, z.infer<Schema>, Output>;
+type ActionBuilder<Type extends ActionType, Context extends object, Schema extends z.ZodType> = <Output>(resolver: Resolver<Context, z.infer<Schema>, Output>) => Action<Type, z.input<Schema>, Output>;
 type ActionBuilderWithoutInput<Type extends ActionType, Context extends object> = ActionBuilder<Type, Context, z.ZodVoid>;
 type ActionBuilderWithInput<Context extends object> = <Schema extends z.ZodType>(schema: Schema) => {
     query: ActionBuilder<'query', Context, Schema>;

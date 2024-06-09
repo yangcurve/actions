@@ -14,7 +14,7 @@ export type ActionBuilder<
   Schema extends z.ZodType,
 > = <Output>(
   resolver: Resolver<Context, z.infer<Schema>, Output>,
-) => Action<Type, z.infer<Schema>, Output>
+) => Action<Type, z.input<Schema>, Output>
 
 type ActionBuilderWithoutInput<Type extends ActionType, Context extends object> = ActionBuilder<
   Type,
