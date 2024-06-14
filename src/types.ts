@@ -4,31 +4,24 @@ export type ActionType = 'query' | 'mutation'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type Action<_Type extends ActionType, Input, Output> = (input: Input) => Promise<Output>
 
-type Resolver<Context extends object, Input, Output> = (param: {
-  ctx: Context
-  input: Input
-}) => Promise<Output>
-export type ActionBuilder<
-  Type extends ActionType,
-  Context extends object,
-  Schema extends z.ZodType,
-> = <Output>(
+type Resolver<Context, Input, Output> = (param: { ctx: Context; input: Input }) => Promise<Output>
+export type ActionBuilder<Type extends ActionType, Context, Schema extends z.ZodType> = <Output>(
   resolver: Resolver<Context, z.infer<Schema>, Output>,
 ) => Action<Type, z.input<Schema>, Output>
 
-type ActionBuilderWithoutInput<Type extends ActionType, Context extends object> = ActionBuilder<
+type ActionBuilderWithoutInput<Type extends ActionType, Context> = ActionBuilder<
   Type,
   Context,
   z.ZodVoid
 >
-type ActionBuilderWithInput<Context extends object> = <Schema extends z.ZodType>(
+type ActionBuilderWithInput<Context> = <Schema extends z.ZodType>(
   schema: Schema,
 ) => {
   query: ActionBuilder<'query', Context, Schema>
   mutation: ActionBuilder<'mutation', Context, Schema>
 }
-type Middleware<Context extends object, NewContext extends Context> = (ctx: Context) => NewContext
-type Procedure<Context extends object> = {
+type Middleware<Context, NewContext extends Context> = (ctx: Context) => NewContext
+type Procedure<Context> = {
   use: <NewContext extends Context>(
     middleware: Middleware<Context, NewContext>,
   ) => Procedure<NewContext>
@@ -36,7 +29,7 @@ type Procedure<Context extends object> = {
   query: ActionBuilderWithoutInput<'query', Context>
   mutation: ActionBuilderWithoutInput<'mutation', Context>
 }
-export type ProcedureBuilder = <Context extends object>(
+export type ProcedureBuilder = <Context>(
   createContext?: () => Promise<Context>,
 ) => Procedure<Context>
 
