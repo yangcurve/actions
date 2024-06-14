@@ -1,6 +1,6 @@
 {
   "name": "@yangcurve/actions",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Server Action wrapper inspired by trpc.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
