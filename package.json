@@ -1,39 +1,39 @@
 {
   "name": "@yangcurve/actions",
-  "version": "0.0.14",
   "description": "Server Action wrapper inspired by trpc.",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "repository": {
-    "url": "https://github.com/yangcurve/actions"
-  },
-  "scripts": {
-    "lint": "prettier -w . && eslint .",
-    "build": "tsup"
-  },
   "keywords": [
     "nextjs",
     "server-action",
     "tanstack-query"
   ],
-  "author": "yangcurve",
+  "version": "0.1.0",
   "license": "MIT",
-  "dependencies": {
-    "@tanstack/react-query": "latest",
-    "lodash": "latest",
-    "zod": "latest"
+  "author": "yangcurve <utsu0621@gmail.com>",
+  "repository": "github:yangcurve/actions",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "transpile-configs": "bun build configs/*.config.ts --outdir ./ -e '*'",
+    "postinstall": "bun run format",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "prebuild": "bun run lint",
+    "preformat": "bun run transpile-configs",
+    "format": "prettier -w .",
+    "lint": "bun run format && eslint . --fix"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@types/lodash": "^4.17.4",
-    "@typescript-eslint/eslint-plugin": "^7.11.0",
-    "@typescript-eslint/parser": "^7.11.0",
-    "eslint": "^8.57.0",
+    "eslint": "^9.12.0",
+    "globals": "^15.11.0",
     "prettier": "^3.2.5",
-    "tsup": "^8.0.2"
+    "tsup": "^8.0.2",
+    "typescript-eslint": "^8.10.0"
   },
   "peerDependencies": {
-    "typescript": "latest"
+    "@tanstack/react-query": "^5.59.14",
+    "typescript": "latest",
+    "zod": "^3.23.8"
   }
 }

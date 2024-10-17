@@ -1,81 +1,41 @@
+import { type UseMutationOptions, type UseMutationResult, type UseQueryResult } from '@tanstack/react-query'
 import { type z } from 'zod'
 
 export type ActionType = 'query' | 'mutation'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export type Action<_Type extends ActionType, Input, Output> = (input: Input) => Promise<Output>
 
-type Resolver<Context, Input, Output> = (param: { ctx: Context; input: Input }) => Promise<Output>
-export type ActionBuilder<Type extends ActionType, Context, Schema extends z.ZodType> = <Output>(
-  resolver: Resolver<Context, z.infer<Schema>, Output>,
+export type ActionBuilder<Type extends ActionType, Schema extends z.ZodType> = <Output>(
+  resolver: (input: z.infer<Schema>) => Output,
 ) => Action<Type, z.input<Schema>, Output>
 
-type ActionBuilderWithoutInput<Type extends ActionType, Context> = ActionBuilder<
-  Type,
-  Context,
-  z.ZodVoid
->
-type ActionBuilderWithInput<Context> = <Schema extends z.ZodType>(
-  schema: Schema,
+type ActionBuilderWithoutInput<Type extends ActionType> = ActionBuilder<Type, z.ZodVoid>
+
+type ActionBuilderWithInput = <Schema extends z.ZodType>(
+  Schema: Schema,
 ) => {
-  query: ActionBuilder<'query', Context, Schema>
-  mutation: ActionBuilder<'mutation', Context, Schema>
+  query: ActionBuilder<'query', Schema>
+  mutation: ActionBuilder<'mutation', Schema>
 }
-type Middleware<Context, NewContext extends Context> = (ctx: Context) => NewContext
-type Procedure<Context> = {
-  use: <NewContext extends Context>(
-    middleware: Middleware<Context, NewContext>,
-  ) => Procedure<NewContext>
-  input: ActionBuilderWithInput<Context>
-  query: ActionBuilderWithoutInput<'query', Context>
-  mutation: ActionBuilderWithoutInput<'mutation', Context>
+
+export type Procedure = {
+  query: ActionBuilderWithoutInput<'query'>
+  mutation: ActionBuilderWithoutInput<'mutation'>
+  input: ActionBuilderWithInput
 }
-export type ProcedureBuilder = <Context>(
-  createContext?: () => Promise<Context>,
-) => Procedure<Context>
 
-export type FlattenObjectKeysWithFilter<
-  Type extends ActionType,
-  Obj extends Record<string, unknown>,
-  Key = keyof Obj,
-> = Key extends string
-  ? Obj[Key] extends Action<infer T, never, unknown>
-    ? T extends Type
-      ? `${Key}`
-      : never
-    : Obj[Key] extends Record<string, unknown>
-      ? `${Key}.${FlattenObjectKeysWithFilter<Type, Obj[Key]>}`
-      : never
-  : never
+export type ClientQueryAction<Input, Output> = (input: Input) => UseQueryResult<Output>
 
-export type FlattenObjectKeys<
-  Obj extends Record<string, unknown>,
-  Key = keyof Obj,
-> = Key extends string
-  ? Obj[Key] extends Record<string, unknown>
-    ? `${Key}.${FlattenObjectKeys<Obj[Key]>}`
-    : `${Key}`
+export type ClientMutationAction<Input, Output> = (
+  options?: Omit<UseMutationOptions<Output, unknown, Input>, 'mutationFn'>,
+) => UseMutationResult<Output, unknown, Input>
+
+export type ClientSideProxy<Actions extends Record<string, unknown>, Path extends ReadonlyArray<string>> = {
+  [Key in keyof Actions]: Key extends string ?
+    Actions[Key] extends Action<infer Type, infer Input, infer Output> ?
+      Type extends 'query' ? { useQuery: ClientQueryAction<Input, Output> }
+      : Type extends 'mutation' ? { useMutation: ClientMutationAction<Input, Output> }
+      : never
+    : Actions[Key] extends Record<string, unknown> ? ClientSideProxy<Actions[Key], [...Path, Key]>
+    : never
   : never
-export type InferActionFromKey<
-  Key extends string,
-  As extends Record<string, unknown>,
-> = Key extends `${infer First}.${infer Rest}`
-  ? As[First] extends Record<string, unknown>
-    ? InferActionFromKey<Rest, As[First]>
-    : As[First]
-  : Key extends `${infer Key}`
-    ? As[Key]
-    : never
-export type InferTarget = 'type' | 'input' | 'output'
-export type InferActionIOFromAction<Target extends InferTarget, A> =
-  A extends Action<infer Type, infer Input, infer Output>
-    ? 'type' extends Target
-      ? Type
-      : 'input' extends Target
-        ? Input
-        : Output
-    : never
-export type InferActionIOFromKey<
-  Target extends InferTarget,
-  Key extends FlattenObjectKeys<As>,
-  As extends Record<string, unknown>,
-> = InferActionIOFromAction<Target, InferActionFromKey<Key, As>>
+}

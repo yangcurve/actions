@@ -1,146 +1,58 @@
-# ACTIONS
+# Actions
 
 Server Action wrapper inspired by trpc.
 
-## USAGE
+## Installation
 
 ```sh
-pnpm add @yangcurve/actions
+bun add @yangcurve/actions
 ```
 
-Initialize Procedures
+## Usage
+
+### Create Server Actions
 
 ```ts
-// procedures.ts
-import { authOptions } from '@/server/auth'
-import { prisma } from '@/server/prisma'
-import { createProcedure } from '@yangcurve/actions'
-import { getServerSession } from 'next-auth'
-
-const createContext = async () => ({
-  db: prisma,
-  session: await getServerSession(authOptions),
-})
-
-const procedure = createProcedure(createContext)
-
-export const publicProcedure = procedure
-export const protectedProcedure = procedure.use((ctx) => {
-  if (!ctx.session || !ctx.session.user) {
-    throw new Error('UNAUTHENTICATED')
-  }
-
-  return {
-    ...ctx,
-    session: {
-      ...ctx.session,
-    },
-  }
-})
-```
-
-Define Server Actions
-
-```ts
-// post.ts
-'use server'
-
-import { protectedProcedure, publicProcedure } from './procedures'
+// say-hello.ts
+import { procedure } from '@yangcurve/actions'
 import { z } from 'zod'
 
-export const hello = publicProcedure
-  .input(z.object({ text: z.string() }))
-  .query(async ({ input }) => {
-    return {
-      greeting: `Hello ${input.text}`,
-    }
-  })
-
-export const getSecretMessage = protectedProcedure.query(async () => {
-  return 'you can now see this secret message!'
-})
-
-export const create = protectedProcedure
-  .input(z.object({ title: z.string().min(1) }))
-  .mutation(async ({ ctx, input }) => {
-    const newPost = ctx.db.post.create({
-      data: {
-        title: input.title,
-      },
-    })
-    return newPost
-  })
+export const sayHello = procedure.input(z.object({ name: z.string() })).query(({ name }) => `Hello, ${name}!`)
 ```
 
-Register Server Actions to one object
+### Add your server actions in a single entrypoint
 
 ```ts
 // actions.ts
-import * as post from './post'
-import { type FlattenObjectKeys, type InferActionIOFromKey } from '@yangcurve/actions'
+import { sayHello } from './say-hello'
 
 export const actions = {
-  post,
-} as const
-export type Actions = typeof actions
-
-type ActionKey = FlattenObjectKeys<Actions>
-export type ActionInput<Key extends ActionKey> = InferActionIOFromKey<'input', Key, Actions>
-export type ActionOutput<Key extends ActionKey> = InferActionIOFromKey<'output', Key, Actions>
-```
-
-Create Client Side API
-
-```ts
-// client.ts
-import { actions } from './actions'
-import { createClientApi } from '@yangcurve/actions'
-
-export const api = createClientApi(actions)
-```
-
-In Server Component:
-
-```ts
-type NewPost = ActionOutput<'post.create'>
-const ServerComponent: React.FC = async () => {
-  const message = await actions.post.hello({ text: 'from server' })
-  const newPost: NewPost = await actions.post.create({ title: 'new post from server' })
-
-  return (
-    <>
-      <div>{message.greeting}</div>
-      <div>title of new post: {newPost.title}</div>
-    </>
-  )
+  sayHello,
 }
 ```
 
-In client Component:
+You can use it directly in server components.
+
+### Create Client Side Proxy
 
 ```ts
-type NewPost = ActionOutput<'post.create'>
-const ClientComponent: React.FC = () => {
-  const [newPost, setNewPost] = useState<NewPost | undefined>()
-  const { data: message, isLoading } = api.query('post.hello')({ text: 'from client' })
-  const { mutate } = api.mutation('post.create')({
-    onSuccess: (data) => {
-      setNewPost(data)
-    },
-  })
+'use client'
 
-  if (isLoading) return <></>
-  return (
-    <>
-      <div>{message?.greeting}</div>
-      {newPost ? (
-        <div>title of new post: {newPost.title}</div>
-      ) : (
-        <button onClick={() => mutate({ title: 'new post from client' })}>
-          create new post
-        </button>
-      )}
-    </>
-  )
+import { actions } from './actions'
+import { createClientSideProxy } from '@yangcurve/actions'
+
+export const api = createClientSideProxy(actions)
+```
+
+In client component, you can use it like this.
+
+```ts
+'use client'
+
+import { api } from './api'
+
+export const ClientComponent = () => {
+  const { data, isLoading } = api.sayHello.useQuery({ name: 'yangcurve' })
+  ...
 }
 ```
