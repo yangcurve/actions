@@ -1,17 +1,24 @@
-import { type Action } from './action'
+import { type ActionType, type Action } from './action'
 import {
   useMutation,
   useQuery,
+  type UndefinedInitialDataOptions,
   type UseMutationOptions,
   type UseMutationResult,
   type UseQueryResult,
+  type QueryClient,
 } from '@tanstack/react-query'
 
-type ClientQueryAction<Input, Output> = (input: Input) => UseQueryResult<Output>
+type ClientQueryAction<Input, Output> = (
+  input: Input,
+  options?: Omit<UndefinedInitialDataOptions<Output>, 'queryFn' | 'queryKey'>,
+  queryClient?: QueryClient,
+) => UseQueryResult<Output>
 
 type ClientMutationAction<Input, Output> = (
-  options?: Omit<UseMutationOptions<Output, unknown, Input>, 'mutationFn'>,
-) => UseMutationResult<Output, unknown, Input>
+  options?: Omit<UseMutationOptions<Output, Error, Input>, 'mutationFn'>,
+  queryClient?: QueryClient,
+) => UseMutationResult<Output, Error, Input>
 
 type ClientSideProxy<Actions extends Record<string, unknown>, Path extends ReadonlyArray<string>> = {
   [Key in keyof Actions]: Key extends string ?
@@ -30,19 +37,32 @@ export const createClientSideProxy = <Actions extends Record<string, unknown>>(
   new Proxy(actions, {
     get: <Key extends string & keyof Actions, Input, Output>(actions: Actions, key: Key) => {
       if (typeof actions[key] === 'function') {
-        const action = actions[key] as Action<never, Input, Output>
+        const action = actions[key] as Action<ActionType, Input, Output>
         return {
-          useQuery: (input) => useQuery({ queryKey: [...path, key, input], queryFn: () => action(input) }),
-          useMutation: (options) => useMutation({ ...options, mutationFn: (input) => action(input) }),
+          useQuery: (input, options, queryClient) =>
+            useQuery(
+              {
+                ...options,
+                queryFn: () => action(input),
+                queryKey: [...path, key, input],
+              },
+              queryClient,
+            ),
+          useMutation: (options, queryClient) =>
+            useMutation(
+              {
+                ...options,
+                mutationFn: (input) => action(input),
+              },
+              queryClient,
+            ),
         } satisfies {
           useQuery: ClientQueryAction<Input, Output>
           useMutation: ClientMutationAction<Input, Output>
         }
       }
       if (typeof actions[key] === 'object') {
-        const res = actions[key]
-        const newPath = [...path, key]
-        return createClientSideProxy(res as Record<string, unknown>, newPath)
+        return createClientSideProxy(actions[key] as Record<string, unknown>, [...path, key])
       }
     },
   }) as ClientSideProxy<Actions, typeof path>
