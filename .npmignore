@@ -1,10 +1,8 @@
 node_modules
+.github
+configs
+**/*.config.js
 src
-.eslintignore
-.eslintrc
-.prettierrc
-.prettierignore
 tsconfig.json
-tsup.config.ts
+bun.lockb
 .DS_Store
-pnpm-lock.yaml
