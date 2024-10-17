@@ -11,6 +11,7 @@ bun add @yangcurve/actions
 ## Usage
 
 ### Create server actions
+
 ```ts
 // say-hello.ts
 import { procedure } from '@yangcurve/actions'
@@ -20,16 +21,22 @@ export const sayHello = procedure.input(z.object({ name: z.string() })).query(({
 ```
 
 ### Add server actions in a single entrypoint
+
 ```ts
 // actions.ts
 import { sayHello } from './say-hello'
+import { type InferActionInput, type InferActionOutput } from '@yangcurve/actions'
 
 export const actions = {
   sayHello,
 }
+
+export type ActionInput = InferActionInput<typeof actions>
+export type ActionOutput = InferActionOutput<typeof actions>
 ```
 
 ### Create client side proxy
+
 ```ts
 // api.ts
 import { actions } from './actions'
@@ -39,6 +46,7 @@ export const api = createClientSideProxy(actions)
 ```
 
 ### In server component
+
 ```ts
 import { actions } from './actions'
 
@@ -57,6 +65,7 @@ export const ServerComponent = async () => {
 ```
 
 ### In client component
+
 ```ts
 'use client'
 
