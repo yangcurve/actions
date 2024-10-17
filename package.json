@@ -21,8 +21,8 @@
   "license": "MIT",
   "dependencies": {
     "@tanstack/react-query": "latest",
-    "lodash": "^4.17.21",
-    "zod": "^3.23.8"
+    "lodash": "latest",
+    "zod": "latest"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
