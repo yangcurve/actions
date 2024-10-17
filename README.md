@@ -20,7 +20,7 @@ import { z } from 'zod'
 export const sayHello = procedure.input(z.object({ name: z.string() })).query(({ name }) => `Hello, ${name}!`)
 ```
 
-### Add your server actions in a single entrypoint
+### Add server actions in a single entrypoint and create client side proxy
 
 ```ts
 // actions.ts
@@ -29,22 +29,13 @@ import { sayHello } from './say-hello'
 export const actions = {
   sayHello,
 }
-```
-
-You can use it directly in server components.
-
-### Create Client Side Proxy
-
-```ts
-'use client'
-
-import { actions } from './actions'
-import { createClientSideProxy } from '@yangcurve/actions'
 
 export const api = createClientSideProxy(actions)
 ```
 
-In client component, you can use it like this.
+You can use `actions` directly in server components.
+
+In client component, you can use `api` like this.
 
 ```ts
 'use client'
