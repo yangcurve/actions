@@ -10,8 +10,7 @@ bun add @yangcurve/actions
 
 ## Usage
 
-### Create Server Actions
-
+### Create server actions
 ```ts
 // say-hello.ts
 import { procedure } from '@yangcurve/actions'
@@ -21,7 +20,6 @@ export const sayHello = procedure.input(z.object({ name: z.string() })).query(({
 ```
 
 ### Add server actions in a single entrypoint and create client side proxy
-
 ```ts
 // actions.ts
 import { sayHello } from './say-hello'
@@ -33,17 +31,32 @@ export const actions = {
 export const api = createClientSideProxy(actions)
 ```
 
-You can use `actions` directly in server components.
+### In server component
+```ts
+import { actions } from './actions'
 
-In client component, you can use `api` like this.
+export const ServerComponent = async () => {
+  const hello = await actions.sayHello({ name: 'yangcurve' })
+  ...
+}
 
+// or import server actions directly
+import { sayHello } from './say-hello'
+
+export const ServerComponent = async () => {
+  const hello = await sayHello({ name: 'yangcurve' })
+  ...
+}
+```
+
+### In client component
 ```ts
 'use client'
 
 import { api } from './api'
 
 export const ClientComponent = () => {
-  const { data, isLoading } = api.sayHello.useQuery({ name: 'yangcurve' })
+  const { data: hello, isLoading } = api.sayHello.useQuery({ name: 'yangcurve' })
   ...
 }
 ```
