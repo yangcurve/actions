@@ -2,16 +2,16 @@ import { type ActionType, type Action } from './action'
 import {
   useMutation,
   useQuery,
-  type UndefinedInitialDataOptions,
   type UseMutationOptions,
   type UseMutationResult,
+  type UseQueryOptions,
   type UseQueryResult,
   type QueryClient,
 } from '@tanstack/react-query'
 
 type ClientQueryAction<Input, Output> = (
   input: Input,
-  options?: Omit<UndefinedInitialDataOptions<Output>, 'queryFn' | 'queryKey'>,
+  options?: Omit<UseQueryOptions<Output>, 'queryFn' | 'queryKey'>,
   queryClient?: QueryClient,
 ) => UseQueryResult<Output>
 
