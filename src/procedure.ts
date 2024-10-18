@@ -18,7 +18,7 @@ const getActionBuilder =
   <T extends ActionType, Schema extends z.ZodTypeAny>(Schema: Schema): ActionBuilder<T, Schema> =>
   (resolver) =>
   async (input) =>
-    resolver(Schema.parse(input) as z.infer<typeof Schema>)
+    await resolver(Schema.parse(input) as z.infer<typeof Schema>)
 
 type Procedure = {
   query: ActionBuilderWithoutInput<'query'>
