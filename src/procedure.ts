@@ -2,7 +2,7 @@ import { type Action, type ActionType } from './action'
 import { z } from 'zod'
 
 type ActionBuilder<Type extends ActionType, Schema extends z.ZodType> = <Output>(
-  resolver: (input: z.infer<Schema>) => Output,
+  resolver: (input: z.infer<Schema>) => Promise<Output>,
 ) => Action<Type, z.input<Schema>, Output>
 
 type ActionBuilderWithoutInput<Type extends ActionType> = ActionBuilder<Type, z.ZodVoid>
