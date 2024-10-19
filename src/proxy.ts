@@ -49,7 +49,8 @@ type ClientProxyUtils<Actions extends Record<string, unknown>> = {
   invalidate: () => Promise<void>
 }
 
-type ClientProxyRoot<Actions extends Record<string, unknown>> = ClientProxy<Actions> & {
+type ClientProxyRoot<Actions extends Record<string, unknown>> =  {
+  api: ClientProxy<Actions>
   useUtils: () => ClientProxyUtils<Actions>
 }
 
@@ -105,7 +106,7 @@ const createClientProxyUtils = <Actions extends Record<string, unknown>>(
 export const createClientProxy = <Actions extends Record<string, unknown>>(
   actions: Actions,
 ): ClientProxyRoot<Actions> => ({
-  ...createInnerClientProxy(actions),
+  api: createInnerClientProxy(actions),
   useUtils: () => {
     const queryClient = useQueryClient()
     const utils = createClientProxyUtils(actions, queryClient)
