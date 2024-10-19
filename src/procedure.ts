@@ -4,7 +4,7 @@ import { z } from 'zod'
 type Resolver<Context, Input, Output> = (param: { ctx: Context; input: Input }) => Promise<Output>
 
 type ActionBuilder<Type extends ActionType, Context, Schema extends z.ZodType> = <Output>(
-  resolver: Resolver<Context, z.infer<Schema>, Output>,
+  resolver: Resolver<Context, z.infer<Schema>, Output | Promise<Output>>,
 ) => Action<Type, z.input<Schema>, Output>
 
 type Middleware<Context, NewContext> = (ctx: Context) => NewContext | Promise<NewContext>
@@ -13,7 +13,7 @@ type Procedure<Context> = {
   use: <NewContext extends Context>(middleware: Middleware<Context, NewContext>) => Procedure<NewContext>
   query: ActionBuilder<'query', Context, z.ZodVoid>
   mutation: ActionBuilder<'mutation', Context, z.ZodVoid>
-  input: <Schema extends z.ZodType, Type extends ActionType>(
+  input: <Type extends ActionType, Schema extends z.ZodType>(
     Schema: Schema,
   ) => {
     query: ActionBuilder<Type, Context, Schema>
@@ -27,7 +27,7 @@ export const createProcedure: ProcedureBuilder = (createContext = () => new Prom
   type Context = Awaited<ReturnType<typeof createContext>>
 
   const getActionBuilder =
-    <Schema extends z.ZodType, T extends ActionType>(Schema: Schema): ActionBuilder<T, Context, Schema> =>
+    <Type extends ActionType, Schema extends z.ZodType>(Schema: Schema): ActionBuilder<Type, Context, Schema> =>
     (resolver) =>
     async (input) =>
       await resolver({
