@@ -26,12 +26,12 @@ export const add = a.mutation(() => count++)
 ### Add server actions in a single entrypoint
 
 ```ts
-// actions.ts
+// server.ts
 import * as count from './count'
 import { type InferActionInput, type InferActionOutput } from '@yangcurve/actions'
 
 export const actions = {
-  count
+  count,
 }
 
 export type ActionInput = InferActionInput<typeof actions>
@@ -42,16 +42,16 @@ export type ActionOutput = InferActionOutput<typeof actions>
 
 ```ts
 // client.ts
-import { actions } from './actions'
-import { createClientProxy } from '@yangcurve/actions'
+import { actions } from './server'
+import { createClientApi } from '@yangcurve/actions'
 
-export const { api, useUtils } = createClientProxy(actions)
+export const api = createClientApi(actions)
 ```
 
 ### In server component
 
 ```ts
-import { actions } from './actions'
+import { actions } from './server'
 
 export const ServerComponent = async () => {
   const count = await actions.count.get()
@@ -72,10 +72,10 @@ export const ServerComponent = async () => {
 ```ts
 'use client'
 
-import { api, useUtils } from './client'
+import { api } from './client'
 
 export const ClientComponent = () => {
-  const utils = useUtils()
+  const utils = api.useUtils()
   const { data: count } = api.count.get.useQuery()
   const { mutate: add } = api.count.add.useMutation({ onSuccess: () => utils.count.invalidate() })
   ...
