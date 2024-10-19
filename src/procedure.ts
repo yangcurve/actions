@@ -21,7 +21,7 @@ type Procedure<Context> = {
   }
 }
 
-type ProcedureBuilder = <Context>(createContext: () => Context | Promise<Context>) => Procedure<Context>
+type ProcedureBuilder = <Context>(createContext?: () => Context | Promise<Context>) => Procedure<Context>
 
 export const createProcedure: ProcedureBuilder = (createContext = () => new Promise(() => {})) => {
   type Context = Awaited<ReturnType<typeof createContext>>

@@ -10,21 +10,40 @@ bun add @yangcurve/actions
 
 ## Usage
 
+### Create Context
+```ts
+// context.ts
+import { auth } from '@/server/auth'
+import { db } from '@/server/db'
+import { createProcedure } from '@yangcurve/actions'
+
+export const publicProcedure = createProcedure(async () => ({
+  db,
+  session: await auth(),
+}))
+
+export const protectedProcedure = publicProcedure.use((ctx) => {
+  if (!ctx.session?.user) throw new Error('UNAUTHENTICATED')
+  return {
+    ...ctx,
+    session: ctx.session,
+  }
+})
+```
+
 ### Create server actions
 
 ```ts
 // count.ts
 'use server'
 
-import { a } from '@yangcurve/actions'
+import { publicProcedure } from './context'
 import { z } from 'zod'
 
 let count = 0
 
-export const get = a.query(() => count)
-export const set = a.input(z.number()).mutation((value) => {
-  count = value
-})
+export const get = publicProcedure.query(() => count)
+export const set = publicProcedure.input(z.number()).mutation(({ input }) => (state = input))
 ```
 
 ### Add server actions in a single entrypoint
