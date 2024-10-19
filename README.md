@@ -38,7 +38,7 @@ export type ActionInput = InferActionInput<typeof actions>
 export type ActionOutput = InferActionOutput<typeof actions>
 ```
 
-### Create client side proxy
+### Create client side api
 
 ```ts
 // client.ts
