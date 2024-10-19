@@ -9,6 +9,7 @@ import {
   type UseQueryResult,
   type QueryClient,
 } from '@tanstack/react-query'
+import { useEffect } from 'react'
 
 type ClientQueryAction<Input, Output> = (
   input: Input,
@@ -41,7 +42,13 @@ export const createClientProxy = <Actions extends Record<string, unknown>>(
     {},
     {
       get: <Input, Output>(_target: unknown, key: string) =>
-        key === 'invalidate' ? () => useQueryClient().invalidateQueries({ queryKey: path })
+        key === 'invalidate' ?
+          () => {
+            const queryClient = useQueryClient()
+            useEffect(() => {
+              queryClient.invalidateQueries({ queryKey: path })
+            }, [])
+          }
         : key === 'useQuery' ?
           (((input, options, queryClient) =>
             useQuery(
