@@ -2,14 +2,12 @@ import { type Action } from './action'
 import {
   useMutation,
   useQuery,
-  useQueryClient,
   type UseMutationOptions,
   type UseMutationResult,
   type UseQueryOptions,
   type UseQueryResult,
   type QueryClient,
 } from '@tanstack/react-query'
-import { useEffect } from 'react'
 
 type ClientQueryAction<Input, Output> = (
   input: Input,
@@ -26,14 +24,13 @@ type ClientProxy<Actions extends Record<string, unknown>, Path extends readonly 
   [Key in keyof Actions]: Key extends string ?
     Actions[Key] extends Action<infer Type, infer Input, infer Output> ?
       Type extends 'query' ?
-        { useQuery: ClientQueryAction<Input, Output>; invalidate: () => Promise<void> }
-      : { useMutation: ClientMutationAction<Input, Output>; invalidate: () => Promise<void> }
+        { useQuery: ClientQueryAction<Input, Output> }
+      : { useMutation: ClientMutationAction<Input, Output> }
     : Actions[Key] extends Record<string, unknown> ? ClientProxy<Actions[Key], [...Path, Key]>
     : never
   : never
-} & {
-  invalidate: () => Promise<void>
 }
+
 export const createClientProxy = <Actions extends Record<string, unknown>>(
   actions: Actions,
   path: readonly string[] = [],
@@ -42,14 +39,7 @@ export const createClientProxy = <Actions extends Record<string, unknown>>(
     {},
     {
       get: <Input, Output>(_target: unknown, key: string) =>
-        key === 'invalidate' ?
-          () => {
-            const queryClient = useQueryClient()
-            useEffect(() => {
-              queryClient.invalidateQueries({ queryKey: path })
-            }, [])
-          }
-        : key === 'useQuery' ?
+        key === 'useQuery' ?
           (((input, options, queryClient) =>
             useQuery(
               {
