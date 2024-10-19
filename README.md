@@ -13,36 +13,39 @@ bun add @yangcurve/actions
 ### Create server actions
 
 ```ts
-// say-hello.ts
+// count.ts
 import { a } from '@yangcurve/actions'
 import { z } from 'zod'
 
-export const sayHello = a.input(z.object({ name: z.string() })).query(({ name }) => `Hello, ${name}!`)
+let count = 0
+
+export const get = a.query(() => count)
+export const add = a.mutation(() => count++)
 ```
 
 ### Add server actions in a single entrypoint
 
 ```ts
 // actions.ts
-import { sayHello } from './say-hello'
+import * as count from './count'
 import { type InferActionInput, type InferActionOutput } from '@yangcurve/actions'
 
 export const actions = {
-  sayHello,
+  count
 }
 
 export type ActionInput = InferActionInput<typeof actions>
 export type ActionOutput = InferActionOutput<typeof actions>
 ```
 
-### Create client side api
+### Create client side proxy
 
 ```ts
-// api.ts
+// client.ts
 import { actions } from './actions'
-import { createClientApi } from '@yangcurve/actions'
+import { createClientProxy } from '@yangcurve/actions'
 
-export const api = createClientApi(actions)
+export const { api, useUtils } = createClientProxy(actions)
 ```
 
 ### In server component
@@ -51,15 +54,15 @@ export const api = createClientApi(actions)
 import { actions } from './actions'
 
 export const ServerComponent = async () => {
-  const hello = await actions.sayHello({ name: 'yangcurve' })
+  const count = await actions.count.get()
   ...
 }
 
 // or import server actions directly
-import { sayHello } from './say-hello'
+import { get } from './count'
 
 export const ServerComponent = async () => {
-  const hello = await sayHello({ name: 'yangcurve' })
+  const count = await get()
   ...
 }
 ```
@@ -69,10 +72,12 @@ export const ServerComponent = async () => {
 ```ts
 'use client'
 
-import { api } from './api'
+import { api, useUtils } from './client'
 
 export const ClientComponent = () => {
-  const { data: hello, isLoading } = api.sayHello.useQuery({ name: 'yangcurve' })
+  const utils = useUtils()
+  const { data: count } = api.count.get.useQuery()
+  const { mutate: add } = api.count.add.useMutation({ onSuccess: () => utils.count.invalidate() })
   ...
 }
 ```
