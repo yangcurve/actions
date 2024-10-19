@@ -1,10 +1,10 @@
 import { type Action, type ActionType } from './action'
 import { z } from 'zod'
 
-type Resolver<Context, Input, Output> = (param: { ctx: Context; input: Input }) => Promise<Output>
+type Resolver<Context, Input, Output> = (param: { ctx: Context; input: Input }) => Output | Promise<Output>
 
 type ActionBuilder<Type extends ActionType, Context, Schema extends z.ZodType> = <Output>(
-  resolver: Resolver<Context, z.infer<Schema>, Output | Promise<Output>>,
+  resolver: Resolver<Context, z.infer<Schema>, Output>,
 ) => Action<Type, z.input<Schema>, Output>
 
 type Middleware<Context, NewContext> = (ctx: Context) => NewContext | Promise<NewContext>
@@ -13,11 +13,11 @@ type Procedure<Context> = {
   use: <NewContext extends Context>(middleware: Middleware<Context, NewContext>) => Procedure<NewContext>
   query: ActionBuilder<'query', Context, z.ZodVoid>
   mutation: ActionBuilder<'mutation', Context, z.ZodVoid>
-  input: <Type extends ActionType, Schema extends z.ZodType>(
+  input: <Schema extends z.ZodType>(
     Schema: Schema,
   ) => {
-    query: ActionBuilder<Type, Context, Schema>
-    mutation: ActionBuilder<Type, Context, Schema>
+    query: ActionBuilder<'query', Context, Schema>
+    mutation: ActionBuilder<'mutation', Context, Schema>
   }
 }
 
