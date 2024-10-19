@@ -6,10 +6,11 @@
     "server-action",
     "tanstack-query"
   ],
-  "version": "0.1.35",
+  "version": "0.1.36",
   "license": "MIT",
   "author": "yangcurve <utsu0621@gmail.com>",
   "repository": "github:yangcurve/actions",
+  "readme": "./README.md",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
