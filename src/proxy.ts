@@ -2,6 +2,7 @@ import { type Action } from './action'
 import {
   useMutation,
   useQuery,
+  useQueryClient,
   type UseMutationOptions,
   type UseMutationResult,
   type UseQueryOptions,
@@ -24,11 +25,13 @@ type ClientProxy<Actions extends Record<string, unknown>, Path extends readonly 
   [Key in keyof Actions]: Key extends string ?
     Actions[Key] extends Action<infer Type, infer Input, infer Output> ?
       Type extends 'query' ?
-        { useQuery: ClientQueryAction<Input, Output> }
-      : { useMutation: ClientMutationAction<Input, Output> }
+        { useQuery: ClientQueryAction<Input, Output>; invalidate: () => Promise<void> }
+      : { useMutation: ClientMutationAction<Input, Output>; invalidate: () => Promise<void> }
     : Actions[Key] extends Record<string, unknown> ? ClientProxy<Actions[Key], [...Path, Key]>
     : never
   : never
+} & {
+  invalidate: () => Promise<void>
 }
 export const createClientProxy = <Actions extends Record<string, unknown>>(
   actions: Actions,
@@ -38,14 +41,15 @@ export const createClientProxy = <Actions extends Record<string, unknown>>(
     {},
     {
       get: <Input, Output>(_target: unknown, key: string) =>
-        key === 'useQuery' ?
+        key === 'invalidate' ? () => useQueryClient().invalidateQueries({ queryKey: path })
+        : key === 'useQuery' ?
           (((input, options, queryClient) =>
             useQuery(
               {
                 ...options,
                 // @ts-expect-error ...
                 queryFn: () => path.reduce((acc, key) => acc[key], actions)(input),
-                queryKey: [...path, key, input],
+                queryKey: [...path, input],
               },
               queryClient,
             )) as ClientQueryAction<Input, Output>)
@@ -56,7 +60,7 @@ export const createClientProxy = <Actions extends Record<string, unknown>>(
                 ...options,
                 // @ts-expect-error ...
                 mutationFn: (input) => path.reduce((acc, key) => acc[key], actions)(input),
-                mutationKey: [...path, key],
+                mutationKey: [...path],
               },
               queryClient,
             )) as ClientMutationAction<Input, Output>)
