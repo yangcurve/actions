@@ -1,13 +1,14 @@
+import { useState } from 'react'
 import { type Action } from './action'
 import {
   useMutation,
   useQuery,
+  useQueryClient,
   type UseMutationOptions,
   type UseMutationResult,
   type UseQueryOptions,
   type UseQueryResult,
   type QueryClient,
-  useQueryClient,
 } from '@tanstack/react-query'
 
 type ClientQueryAction<Input, Output> = (
@@ -21,13 +22,13 @@ type ClientMutationAction<Input, Output> = (
   queryClient?: QueryClient,
 ) => UseMutationResult<Output, Error, Input>
 
-type ClientProxy<Actions extends Record<string, unknown>> = {
+type ClientApi<Actions extends Record<string, unknown>> = {
   [Key in keyof Actions]: Key extends string ?
     Actions[Key] extends Action<infer Type, infer Input, infer Output> ?
       Type extends 'query' ?
         { useQuery: ClientQueryAction<Input, Output> }
       : { useMutation: ClientMutationAction<Input, Output> }
-    : Actions[Key] extends Record<string, unknown> ? ClientProxy<Actions[Key]>
+    : Actions[Key] extends Record<string, unknown> ? ClientApi<Actions[Key]>
     : never
   : never
 }
@@ -49,15 +50,15 @@ type ClientProxyUtils<Actions extends Record<string, unknown>> = {
   invalidate: () => Promise<void>
 }
 
-type ClientProxyRoot<Actions extends Record<string, unknown>> =  {
-  api: ClientProxy<Actions>
+type ClientProxy<Actions extends Record<string, unknown>> = {
+  api: ClientApi<Actions>
   useUtils: () => ClientProxyUtils<Actions>
 }
 
-const createInnerClientProxy = <Actions extends Record<string, unknown>>(
+const createClientApi = <Actions extends Record<string, unknown>>(
   actions: Actions,
   path: readonly string[] = [],
-): ClientProxy<Actions> =>
+): ClientApi<Actions> =>
   new Proxy(
     {},
     {
@@ -84,9 +85,9 @@ const createInnerClientProxy = <Actions extends Record<string, unknown>>(
               },
               queryClient,
             )) as ClientMutationAction<Input, Output>)
-        : createInnerClientProxy(actions, [...path, key]),
+        : createClientApi(actions, [...path, key]),
     },
-  ) as ClientProxy<Actions>
+  ) as ClientApi<Actions>
 
 const createClientProxyUtils = <Actions extends Record<string, unknown>>(
   actions: Actions,
@@ -103,13 +104,12 @@ const createClientProxyUtils = <Actions extends Record<string, unknown>>(
     },
   ) as ClientProxyUtils<Actions>
 
-export const createClientProxy = <Actions extends Record<string, unknown>>(
-  actions: Actions,
-): ClientProxyRoot<Actions> => ({
-  api: createInnerClientProxy(actions),
-  useUtils: () => {
-    const queryClient = useQueryClient()
-    const utils = createClientProxyUtils(actions, queryClient)
-    return utils
-  },
-})
+export const createClientProxy = <Actions extends Record<string, unknown>>(actions: Actions) =>
+  ({
+    api: createClientApi(actions),
+    useUtils: () => {
+      const queryClient = useQueryClient()
+      const [utils] = useState(createClientProxyUtils(actions, queryClient))
+      return utils
+    },
+  }) satisfies ClientProxy<Actions>
