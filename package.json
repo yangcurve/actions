@@ -6,7 +6,7 @@
     "server-action",
     "tanstack-query"
   ],
-  "version": "0.1.32",
+  "version": "0.1.33",
   "license": "MIT",
   "author": "yangcurve <utsu0621@gmail.com>",
   "repository": "github:yangcurve/actions",
@@ -16,12 +16,12 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "transpile-configs": "bun build configs/*.config.ts --outdir ./ -e '*'",
-    "postinstall": "bun run format",
-    "build": "tsup src/index.ts --format cjs,esm --dts",
     "prebuild": "bun run lint",
+    "build": "tsup src/index.ts --format cjs,esm --dts",
     "preformat": "bun run transpile-configs",
     "format": "prettier -w .",
-    "lint": "bun run format && eslint . --fix"
+    "prelint": "bun run format",
+    "lint": "eslint . --fix"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
