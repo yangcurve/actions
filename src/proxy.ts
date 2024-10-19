@@ -97,7 +97,8 @@ const createClientProxyUtils = <Actions extends Record<string, unknown>>(
     {},
     {
       get: <Input>(_target: unknown, key: string) =>
-        key === 'invalidate' ? (input?: Input) => queryClient.invalidateQueries({ queryKey: [...path, input] })
+        key === 'invalidate' ?
+          (input?: Input) => queryClient.invalidateQueries({ queryKey: [...path, input].filter(Boolean) })
         : key === 'isMutating' ? () => queryClient.isMutating({ mutationKey: path })
         : createClientProxyUtils(actions, queryClient, [...path, key]),
     },
