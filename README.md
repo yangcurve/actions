@@ -14,10 +14,10 @@ bun add @yangcurve/actions
 
 ```ts
 // say-hello.ts
-import { procedure } from '@yangcurve/actions'
+import { a } from '@yangcurve/actions'
 import { z } from 'zod'
 
-export const sayHello = procedure.input(z.object({ name: z.string() })).query(({ name }) => `Hello, ${name}!`)
+export const sayHello = a.input(z.object({ name: z.string() })).query(({ name }) => `Hello, ${name}!`)
 ```
 
 ### Add server actions in a single entrypoint
@@ -40,9 +40,9 @@ export type ActionOutput = InferActionOutput<typeof actions>
 ```ts
 // api.ts
 import { actions } from './actions'
-import { createClientSideProxy } from '@yangcurve/actions'
+import { createClientProxy } from '@yangcurve/actions'
 
-export const api = createClientSideProxy(actions)
+export const api = createClientProxy(actions)
 ```
 
 ### In server component

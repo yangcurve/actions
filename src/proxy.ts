@@ -20,20 +20,20 @@ type ClientMutationAction<Input, Output> = (
   queryClient?: QueryClient,
 ) => UseMutationResult<Output, Error, Input>
 
-type ClientSideProxy<Actions extends Record<string, unknown>, Path extends ReadonlyArray<string>> = {
+type ClientProxy<Actions extends Record<string, unknown>, Path extends ReadonlyArray<string>> = {
   [Key in keyof Actions]: Key extends string ?
     Actions[Key] extends Action<infer Type, infer Input, infer Output> ?
       Type extends 'query' ?
         { useQuery: ClientQueryAction<Input, Output> }
       : { useMutation: ClientMutationAction<Input, Output> }
-    : Actions[Key] extends Record<string, unknown> ? ClientSideProxy<Actions[Key], [...Path, Key]>
+    : Actions[Key] extends Record<string, unknown> ? ClientProxy<Actions[Key], [...Path, Key]>
     : never
   : never
 }
-export const createClientSideProxy = <Actions extends Record<string, unknown>>(
+export const createClientProxy = <Actions extends Record<string, unknown>>(
   actions: Actions,
   path: ReadonlyArray<string> = [],
-): ClientSideProxy<Actions, typeof path> =>
+): ClientProxy<Actions, typeof path> =>
   new Proxy(actions, {
     get: <Key extends string & keyof Actions, Input, Output>(actions: Actions, key: Key) => {
       if (typeof actions[key] === 'function') {
@@ -62,7 +62,7 @@ export const createClientSideProxy = <Actions extends Record<string, unknown>>(
         }
       }
       if (typeof actions[key] === 'object') {
-        return createClientSideProxy(actions[key] as Record<string, unknown>, [...path, key])
+        return createClientProxy(actions[key] as Record<string, unknown>, [...path, key])
       }
     },
-  }) as ClientSideProxy<Actions, typeof path>
+  }) as ClientProxy<Actions, typeof path>
