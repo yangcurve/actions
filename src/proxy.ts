@@ -16,7 +16,7 @@ type ClientQueryAction<Input, Output> = (
 ) => UseQueryResult<Output>
 
 type ClientMutationAction<Input, Output> = (
-  options?: Omit<UseMutationOptions<Output, Error, Input>, 'mutationFn'>,
+  options?: Omit<UseMutationOptions<Output, Error, Input>, 'mutationFn' | 'mutationKey'>,
   queryClient?: QueryClient,
 ) => UseMutationResult<Output, Error, Input>
 
@@ -56,6 +56,7 @@ export const createClientProxy = <Actions extends Record<string, unknown>>(
                 ...options,
                 // @ts-expect-error ...
                 mutationFn: (input) => path.reduce((acc, key) => acc[key], actions)(input),
+                mutationKey: [...path, key],
               },
               queryClient,
             )) as ClientMutationAction<Input, Output>)
