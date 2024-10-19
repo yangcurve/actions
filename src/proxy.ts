@@ -8,7 +8,6 @@ import {
   type UseQueryResult,
   type QueryClient,
 } from '@tanstack/react-query'
-import _ from 'lodash'
 
 type ClientQueryAction<Input, Output> = (
   input: Input,
