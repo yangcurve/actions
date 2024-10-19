@@ -6,7 +6,7 @@
     "server-action",
     "tanstack-query"
   ],
-  "version": "0.1.22",
+  "version": "0.1.23",
   "license": "MIT",
   "author": "yangcurve <utsu0621@gmail.com>",
   "repository": "github:yangcurve/actions",
@@ -25,10 +25,8 @@
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@types/react": "^18.3.11",
     "eslint": "^9.13.0",
     "prettier": "^3.3.3",
-    "react": "^18.3.1",
     "tsup": "^8.3.0",
     "typescript-eslint": "^8.10.0"
   },

@@ -1,6 +1,3 @@
-'use client'
-
-import { useState } from 'react'
 import { type Action } from './action'
 import {
   useMutation,
@@ -111,7 +108,6 @@ export const createClientProxy = <Actions extends Record<string, unknown>>(actio
     api: createClientApi(actions),
     useUtils: () => {
       const queryClient = useQueryClient()
-      const [utils] = useState(createClientProxyUtils(actions, queryClient))
-      return utils
+      return createClientProxyUtils(actions, queryClient)
     },
   }) satisfies ClientProxy<Actions>
