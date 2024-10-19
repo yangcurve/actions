@@ -22,7 +22,9 @@ import { z } from 'zod'
 let count = 0
 
 export const get = a.query(() => count)
-export const add = a.mutation(() => count++)
+export const set = a.input(z.number()).mutation((value) => {
+  count = value
+})
 ```
 
 ### Add server actions in a single entrypoint
@@ -79,7 +81,7 @@ import { api } from './client'
 export const ClientComponent = () => {
   const utils = api.useUtils()
   const { data: count } = api.count.get.useQuery()
-  const { mutate: add } = api.count.add.useMutation({ onSuccess: () => utils.count.invalidate() })
+  const { mutate: set } = api.count.set.useMutation({ onSuccess: () => utils.count.invalidate() })
   ...
 }
 ```
