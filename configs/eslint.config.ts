@@ -1,12 +1,10 @@
 import { type Linter } from 'eslint'
-import globals from 'globals'
 import tsEslint from 'typescript-eslint'
 
 const config = [
   ...tsEslint.configs.recommended,
   { files: ['**/*.{ts}'] },
   { ignores: ['node_modules', 'dist'] },
-  { languageOptions: { globals: globals.browser } },
   {
     rules: {
       '@typescript-eslint/no-namespace': 'off',
