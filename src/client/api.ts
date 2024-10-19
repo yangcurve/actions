@@ -1,8 +1,7 @@
-import { type Action } from './action'
+import { type Action } from '..'
 import {
   useMutation,
   useQuery,
-  useQueryClient,
   type UseMutationOptions,
   type UseMutationResult,
   type UseQueryOptions,
@@ -21,7 +20,7 @@ type ClientMutationAction<Input, Output> = (
   queryClient?: QueryClient,
 ) => UseMutationResult<Output, Error, Input>
 
-type ClientApi<Actions extends Record<string, unknown>> = {
+export type ClientApi<Actions extends Record<string, unknown>> = {
   [Key in keyof Actions]: Key extends string ?
     Actions[Key] extends Action<infer Type, infer Input, infer Output> ?
       Type extends 'query' ?
@@ -32,36 +31,14 @@ type ClientApi<Actions extends Record<string, unknown>> = {
   : never
 }
 
-type ClientProxyUtils<Actions extends Record<string, unknown>> = {
-  [Key in keyof Actions]: Key extends string ?
-    Actions[Key] extends Action<infer Type, infer Input, unknown> ?
-      Type extends 'query' ?
-        {
-          invalidate: (input?: Input) => Promise<void>
-        }
-      : {
-          isMutating: () => number
-        }
-    : Actions[Key] extends Record<string, unknown> ? ClientProxyUtils<Actions[Key]>
-    : never
-  : never
-} & {
-  invalidate: () => Promise<void>
-}
-
-type ClientProxy<Actions extends Record<string, unknown>> = {
-  api: ClientApi<Actions>
-  useUtils: () => ClientProxyUtils<Actions>
-}
-
-const createClientApi = <Actions extends Record<string, unknown>>(
+export const createClientApi = <Actions extends Record<string, unknown>>(
   actions: Actions,
   path: readonly string[] = [],
 ): ClientApi<Actions> =>
   new Proxy(
     {},
     {
-      get: <Input, Output>(_target: unknown, key: string) =>
+      get: <Input, Output>(_: unknown, key: string) =>
         key === 'useQuery' ?
           (((input, options, queryClient) =>
             useQuery(
@@ -87,28 +64,3 @@ const createClientApi = <Actions extends Record<string, unknown>>(
         : createClientApi(actions, [...path, key]),
     },
   ) as ClientApi<Actions>
-
-const createClientProxyUtils = <Actions extends Record<string, unknown>>(
-  actions: Actions,
-  queryClient: QueryClient,
-  path: readonly string[] = [],
-): ClientProxyUtils<Actions> =>
-  new Proxy(
-    {},
-    {
-      get: <Input>(_target: unknown, key: string) =>
-        key === 'invalidate' ?
-          (input?: Input) => queryClient.invalidateQueries({ queryKey: [...path, input].filter(Boolean) })
-        : key === 'isMutating' ? () => queryClient.isMutating({ mutationKey: path })
-        : createClientProxyUtils(actions, queryClient, [...path, key]),
-    },
-  ) as ClientProxyUtils<Actions>
-
-export const createClientProxy = <Actions extends Record<string, unknown>>(actions: Actions) =>
-  ({
-    api: createClientApi(actions),
-    useUtils: () => {
-      const queryClient = useQueryClient()
-      return createClientProxyUtils(actions, queryClient)
-    },
-  }) satisfies ClientProxy<Actions>

@@ -1,3 +1,3 @@
 export * from './action'
-export * from './proxy'
+export * from './client'
 export * from './utils'
