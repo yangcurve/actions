@@ -20,21 +20,21 @@ type ClientMutationAction<Input, Output> = (
   queryClient?: QueryClient,
 ) => UseMutationResult<Output, Error, Input>
 
-export type ClientApi<Actions extends Record<string, unknown>> = {
+export type ClientProxy<Actions extends Record<string, unknown>> = {
   [Key in keyof Actions]: Key extends string ?
     Actions[Key] extends Action<infer Type, infer Input, infer Output> ?
       Type extends 'query' ?
         { useQuery: ClientQueryAction<Input, Output> }
       : { useMutation: ClientMutationAction<Input, Output> }
-    : Actions[Key] extends Record<string, unknown> ? ClientApi<Actions[Key]>
+    : Actions[Key] extends Record<string, unknown> ? ClientProxy<Actions[Key]>
     : never
   : never
 }
 
-export const createClientApi = <Actions extends Record<string, unknown>>(
+export const createClientProxy = <Actions extends Record<string, unknown>>(
   actions: Actions,
   path: readonly string[] = [],
-): ClientApi<Actions> =>
+): ClientProxy<Actions> =>
   new Proxy(
     {},
     {
@@ -61,6 +61,6 @@ export const createClientApi = <Actions extends Record<string, unknown>>(
               },
               queryClient,
             )) as ClientMutationAction<Input, Output>)
-        : createClientApi(actions, [...path, key]),
+        : createClientProxy(actions, [...path, key]),
     },
-  ) as ClientApi<Actions>
+  ) as ClientProxy<Actions>

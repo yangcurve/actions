@@ -1,13 +1,12 @@
-import { createClientApi, type ClientApi } from './api'
+import { createClientProxy, type ClientProxy } from './proxy'
 import { createClientUtils, type ClientUtils } from './utils'
 import { useQueryClient } from '@tanstack/react-query'
 
-type ClientProxy<Actions extends Record<string, unknown>> = {
-  api: ClientApi<Actions>
+type ClientApi<Actions extends Record<string, unknown>> = ClientProxy<Actions> & {
   useUtils: () => ClientUtils<Actions>
 }
 
-export const createClientProxy = <Actions extends Record<string, unknown>>(actions: Actions): ClientProxy<Actions> =>
+export const createClientApi = <Actions extends Record<string, unknown>>(actions: Actions): ClientApi<Actions> =>
   new Proxy(
     {},
     {
@@ -17,6 +16,6 @@ export const createClientProxy = <Actions extends Record<string, unknown>>(actio
             const queryClient = useQueryClient()
             return createClientUtils(actions, queryClient)
           }
-        : createClientApi(actions),
+        : createClientProxy(actions),
     },
-  ) as ClientProxy<Actions>
+  ) as ClientApi<Actions>

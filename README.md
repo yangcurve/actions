@@ -35,14 +35,14 @@ export type ActionInput = InferActionInput<typeof actions>
 export type ActionOutput = InferActionOutput<typeof actions>
 ```
 
-### Create client side proxy
+### Create client side api
 
 ```ts
 // api.ts
 import { actions } from './actions'
-import { createClientProxy } from '@yangcurve/actions'
+import { createClientApi } from '@yangcurve/actions'
 
-export const api = createClientProxy(actions)
+export const api = createClientApi(actions)
 ```
 
 ### In server component
