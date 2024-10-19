@@ -14,6 +14,8 @@ bun add @yangcurve/actions
 
 ```ts
 // count.ts
+'use server'
+
 import { a } from '@yangcurve/actions'
 import { z } from 'zod'
 
@@ -27,8 +29,6 @@ export const add = a.mutation(() => count++)
 
 ```ts
 // server.ts
-'use server'
-
 import * as count from './count'
 import { type InferActionInput, type InferActionOutput } from '@yangcurve/actions'
 
