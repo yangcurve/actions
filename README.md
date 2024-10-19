@@ -11,6 +11,7 @@ bun add @yangcurve/actions
 ## Usage
 
 ### Create Context
+
 ```ts
 // context.ts
 import { auth } from '@/server/auth'
