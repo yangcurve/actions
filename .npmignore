@@ -4,5 +4,6 @@ configs
 **/*.config.js
 src
 tsconfig.json
+README.md
 bun.lockb
 .DS_Store
