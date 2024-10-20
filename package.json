@@ -6,7 +6,7 @@
     "server-action",
     "tanstack-query"
   ],
-  "version": "0.1.44",
+  "version": "0.1.45",
   "license": "MIT",
   "author": "yangcurve <utsu0621@gmail.com>",
   "repository": "github:yangcurve/actions",
@@ -19,6 +19,9 @@
     "build": "tsup src/index.ts --format cjs,esm --dts",
     "format": "bun run config && prettier -w .",
     "lint": "bun run format && eslint . --fix"
+  },
+  "dependencies": {
+    "superjson": "^2.2.1"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",

@@ -1,4 +1,5 @@
 import { type Action, type ActionType } from './action'
+import SuperJSON from 'superjson'
 import { z } from 'zod'
 
 type Resolver<Context, Input, Output> = (param: { ctx: Context; input: Input }) => Output | Promise<Output>
@@ -30,10 +31,12 @@ export const createProcedure: ProcedureBuilder = (createContext = () => new Prom
     <Type extends ActionType, Schema extends z.ZodType>(Schema: Schema): ActionBuilder<Type, Context, Schema> =>
     (resolver) =>
     async (input) =>
-      await resolver({
-        ctx: await createContext(),
-        input: Schema.parse(input) as z.infer<typeof Schema>,
-      })
+      SuperJSON.stringify(
+        await resolver({
+          ctx: await createContext(),
+          input: Schema.parse(input) as z.infer<typeof Schema>,
+        }),
+      ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
 
   return {
     use: (middleware) => createProcedure(async () => await middleware(await createContext())),

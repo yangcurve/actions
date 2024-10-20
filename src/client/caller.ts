@@ -1,12 +1,15 @@
+import { type Caller } from '../caller'
 import { createClientProxy, type ClientProxy } from './proxy'
 import { createClientUtils, type ClientUtils } from './utils'
 import { useQueryClient } from '@tanstack/react-query'
 
-type ClientApi<Actions extends Record<string, unknown>> = ClientProxy<Actions> & {
+type ClientCaller<Actions extends Record<string, unknown>> = ClientProxy<Actions> & {
   useUtils: () => ClientUtils<Actions>
 }
 
-export const createClientApi = <Actions extends Record<string, unknown>>(actions: Actions): ClientApi<Actions> =>
+export const createClientCaller = <Actions extends Record<string, unknown>>(
+  actions: Caller<Actions>,
+): ClientCaller<Actions> =>
   new Proxy(
     {},
     {
@@ -18,4 +21,4 @@ export const createClientApi = <Actions extends Record<string, unknown>>(actions
           }
         : createClientProxy(actions, key),
     },
-  ) as ClientApi<Actions>
+  ) as ClientCaller<Actions>

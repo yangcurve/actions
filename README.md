@@ -47,29 +47,29 @@ export const get = publicProcedure.query(() => count)
 export const set = publicProcedure.input(z.number()).mutation(({ input }) => (state = input))
 ```
 
-### Add server actions in a single entrypoint
+### Create server side caller
 
 ```ts
 // server.ts
 import * as count from './count'
-import { type InferActionInput, type InferActionOutput } from '@yangcurve/actions'
+import { createCaller, type InferActionInput, type InferActionOutput } from '@yangcurve/actions'
 
-export const actions = {
+export const actions = createCaller({
   count,
-}
+})
 
 export type ActionInput = InferActionInput<typeof actions>
 export type ActionOutput = InferActionOutput<typeof actions>
 ```
 
-### Create client side api
+### Create client side caller
 
 ```ts
 // client.ts
 import { actions } from './server'
-import { createClientApi } from '@yangcurve/actions'
+import { createClientCaller } from '@yangcurve/actions'
 
-export const api = createClientApi(actions)
+export const api = createClientCaller(actions)
 ```
 
 ### In server component
@@ -79,14 +79,6 @@ import { actions } from './server'
 
 export const ServerComponent = async () => {
   const count = await actions.count.get()
-  ...
-}
-
-// or import server actions directly
-import { get } from './count'
-
-export const ServerComponent = async () => {
-  const count = await get()
   ...
 }
 ```
