@@ -37,7 +37,7 @@ export const createProcedure: ProcedureBuilder = ({ createContext = () => new Pr
         ctx: await createContext(),
         input: Schema.parse(input) as z.infer<typeof Schema>,
       })
-      return transformer?.stringify?.(output) ?? transformer?.serialize?.(output) ?? output
+      return transformer?.stringify(output) ?? output
     }
 
   return {

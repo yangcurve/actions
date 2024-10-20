@@ -16,7 +16,7 @@ export const createCallerFactory = ({ transformer }: { transformer?: Transformer
           if (typeof action === 'function')
             return async (input: Input) => {
               const output = await action(input)
-              return transformer?.parse?.(output) ?? transformer?.deserialize?.(output) ?? output
+              return transformer?.parse?.(output) ?? output
             }
           return createCaller(actions, [...path, key])
         },
