@@ -1,4 +1,4 @@
-import { type Action } from '..'
+import { type Action } from '../types'
 import {
   useMutation,
   useQuery,

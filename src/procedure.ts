@@ -1,5 +1,4 @@
-import { type Action, type ActionType } from './action'
-import SuperJSON from 'superjson'
+import { type Action, type ActionType, type Transformer } from './types'
 import { z } from 'zod'
 
 type Resolver<Context, Input, Output> = (param: { ctx: Context; input: Input }) => Output | Promise<Output>
@@ -22,24 +21,31 @@ type Procedure<Context> = {
   }
 }
 
-type ProcedureBuilder = <Context>(createContext?: () => Context | Promise<Context>) => Procedure<Context>
+type ProcedureBuilder = <Context>(options: {
+  createContext?: () => Context | Promise<Context>
+  transformer?: Transformer
+}) => Procedure<Context>
 
-export const createProcedure: ProcedureBuilder = (createContext = () => new Promise(() => {})) => {
+export const createProcedure: ProcedureBuilder = ({ createContext = () => new Promise(() => {}), transformer }) => {
   type Context = Awaited<ReturnType<typeof createContext>>
 
   const getActionBuilder =
     <Type extends ActionType, Schema extends z.ZodType>(Schema: Schema): ActionBuilder<Type, Context, Schema> =>
     (resolver) =>
-    async (input) =>
-      SuperJSON.stringify(
-        await resolver({
-          ctx: await createContext(),
-          input: Schema.parse(input) as z.infer<typeof Schema>,
-        }),
-      ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    async (input) => {
+      const output = await resolver({
+        ctx: await createContext(),
+        input: Schema.parse(input) as z.infer<typeof Schema>,
+      })
+      return transformer?.stringify?.(output) ?? transformer?.serialize?.(output) ?? output
+    }
 
   return {
-    use: (middleware) => createProcedure(async () => await middleware(await createContext())),
+    use: (middleware) =>
+      createProcedure({
+        createContext: async () => await middleware(await createContext()),
+        transformer,
+      }),
     query: getActionBuilder(z.void()),
     mutation: getActionBuilder(z.void()),
     input: (Schema) => ({

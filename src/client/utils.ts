@@ -1,4 +1,4 @@
-import { type Action } from '..'
+import { type Action } from '../types'
 import { type QueryClient } from '@tanstack/react-query'
 
 export type ClientUtils<Actions extends Record<string, unknown>> = {

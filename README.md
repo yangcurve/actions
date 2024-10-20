@@ -16,15 +16,17 @@ bun add @yangcurve/actions
 // context.ts
 import { auth } from '@/server/auth'
 import { db } from '@/server/db'
-import { createProcedure } from '@yangcurve/actions'
+import { initActions } from '@yangcurve/actions'
 
-export const publicProcedure = createProcedure(async () => ({
-  db,
-  session: await auth(),
-}))
+export const { procedure, createCaller } = initActions({
+  createContext: async () => ({
+    db,
+    session: await auth(),
+  })
+})
 
-export const protectedProcedure = publicProcedure.use((ctx) => {
-  if (!ctx.session?.user) throw new Error('UNAUTHENTICATED')
+export const authorizedProcedure = procedure.use((ctx) => {
+  if (!ctx.session?.user) throw new Error('UNAUTHORIZED')
   return {
     ...ctx,
     session: ctx.session,
@@ -38,21 +40,22 @@ export const protectedProcedure = publicProcedure.use((ctx) => {
 // count.ts
 'use server'
 
-import { publicProcedure } from './context'
+import { procedure } from './context'
 import { z } from 'zod'
 
 let count = 0
 
-export const get = publicProcedure.query(() => count)
-export const set = publicProcedure.input(z.number()).mutation(({ input }) => (state = input))
+export const get = procedure.query(() => count)
+export const set = procedure.input(z.number()).mutation(({ input }) => (state = input))
 ```
 
 ### Create server side caller
 
 ```ts
 // server.ts
+import { createCaller } from './context'
 import * as count from './count'
-import { createCaller, type InferActionInput, type InferActionOutput } from '@yangcurve/actions'
+import { type InferActionInput, type InferActionOutput } from '@yangcurve/actions'
 
 export const actions = createCaller({
   count,

@@ -24,12 +24,7 @@
       }
     ],
     "incremental": true,
-    "tsBuildInfoFile": "./dist/.tsbuildinfo",
-    /* Path Aliases */
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "tsBuildInfoFile": "./dist/.tsbuildinfo"
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.cjs", "**/*.js", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
