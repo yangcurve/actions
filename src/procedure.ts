@@ -10,7 +10,7 @@ type ActionBuilder<Type extends ActionType, Context, Schema extends z.ZodType> =
 type Middleware<Context, NewContext> = (ctx: Context) => NewContext | Promise<NewContext>
 
 type Procedure<Context> = {
-  use: <NewContext extends Context>(middleware: Middleware<Context, NewContext>) => Procedure<NewContext>
+  use: <NewContext>(middleware: Middleware<Context, NewContext>) => Procedure<NewContext>
   query: ActionBuilder<'query', Context, z.ZodVoid>
   mutation: ActionBuilder<'mutation', Context, z.ZodVoid>
   input: <Schema extends z.ZodType>(
