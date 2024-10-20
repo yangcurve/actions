@@ -1,13 +1,13 @@
-import { type Action } from '../types'
 import {
-  useMutation,
-  useQuery,
+  type QueryClient,
   type UseMutationOptions,
   type UseMutationResult,
   type UseQueryOptions,
   type UseQueryResult,
-  type QueryClient,
+  useMutation,
+  useQuery,
 } from '@tanstack/react-query'
+import type { Action } from '../types'
 
 type ClientQueryAction<Input, Output> = (
   input: Input,
@@ -21,14 +21,15 @@ type ClientMutationAction<Input, Output> = (
 ) => UseMutationResult<Output, Error, Input>
 
 export type ClientProxy<Actions extends Record<string, unknown>> = {
-  [Key in keyof Actions]: Key extends string ?
-    Actions[Key] extends Action<infer Type, infer Input, infer Output> ?
-      Type extends 'query' ?
-        { useQuery: ClientQueryAction<Input, Output> }
-      : { useMutation: ClientMutationAction<Input, Output> }
-    : Actions[Key] extends Record<string, unknown> ? ClientProxy<Actions[Key]>
+  [Key in keyof Actions]: Key extends string
+    ? Actions[Key] extends Action<infer Type, infer Input, infer Output>
+      ? Type extends 'query'
+        ? { useQuery: ClientQueryAction<Input, Output> }
+        : { useMutation: ClientMutationAction<Input, Output> }
+      : Actions[Key] extends Record<string, unknown>
+        ? ClientProxy<Actions[Key]>
+        : never
     : never
-  : never
 }
 
 export const createClientProxy = <Actions extends Record<string, unknown>>(
@@ -39,28 +40,28 @@ export const createClientProxy = <Actions extends Record<string, unknown>>(
     {},
     {
       get: <Input, Output>(_: unknown, key: string) =>
-        key === 'useQuery' ?
-          (((input, options, queryClient) =>
-            useQuery(
-              {
-                ...options,
-                // @ts-expect-error ...
-                queryFn: () => path.reduce((acc, key) => acc[key], actions)(input),
-                queryKey: [...path, input],
-              },
-              queryClient,
-            )) as ClientQueryAction<Input, Output>)
-        : key === 'useMutation' ?
-          (((options, queryClient) =>
-            useMutation(
-              {
-                ...options,
-                // @ts-expect-error ...
-                mutationFn: (input) => path.reduce((acc, key) => acc[key], actions)(input),
-                mutationKey: path,
-              },
-              queryClient,
-            )) as ClientMutationAction<Input, Output>)
-        : createClientProxy(actions, ...path, key),
+        key === 'useQuery'
+          ? (((input, options, queryClient) =>
+              useQuery(
+                {
+                  ...options,
+                  // @ts-expect-error ...
+                  queryFn: () => path.reduce((acc, key) => acc[key], actions)(input),
+                  queryKey: [...path, input],
+                },
+                queryClient,
+              )) as ClientQueryAction<Input, Output>)
+          : key === 'useMutation'
+            ? (((options, queryClient) =>
+                useMutation(
+                  {
+                    ...options,
+                    // @ts-expect-error ...
+                    mutationFn: (input) => path.reduce((acc, key) => acc[key], actions)(input),
+                    mutationKey: path,
+                  },
+                  queryClient,
+                )) as ClientMutationAction<Input, Output>)
+            : createClientProxy(actions, ...path, key),
     },
   ) as ClientProxy<Actions>

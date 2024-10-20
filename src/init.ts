@@ -1,6 +1,6 @@
 import { createCallerFactory } from './caller'
 import { createProcedure } from './procedure'
-import { type Transformer } from './types'
+import type { Transformer } from './types'
 
 export type InitOptions<Context> = {
   createContext?: () => Context | Promise<Context>

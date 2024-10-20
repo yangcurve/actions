@@ -1,5 +1,5 @@
-import { type Action, type ActionType, type Transformer } from './types'
 import { z } from 'zod'
+import type { Action, ActionType, Transformer } from './types'
 
 type Resolver<Context, Input, Output> = (param: { ctx: Context; input: Input }) => Output | Promise<Output>
 

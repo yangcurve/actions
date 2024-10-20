@@ -1,19 +1,20 @@
-import { type Action } from '../types'
-import { type QueryClient } from '@tanstack/react-query'
+import type { QueryClient } from '@tanstack/react-query'
+import type { Action } from '../types'
 
 export type ClientUtils<Actions extends Record<string, unknown>> = {
-  [Key in keyof Actions]: Key extends string ?
-    Actions[Key] extends Action<infer Type, infer Input, unknown> ?
-      Type extends 'query' ?
-        {
-          invalidate: (input?: Input) => Promise<void>
-        }
-      : {
-          isMutating: () => number
-        }
-    : Actions[Key] extends Record<string, unknown> ? ClientUtils<Actions[Key]>
+  [Key in keyof Actions]: Key extends string
+    ? Actions[Key] extends Action<infer Type, infer Input, unknown>
+      ? Type extends 'query'
+        ? {
+            invalidate: (input?: Input) => Promise<void>
+          }
+        : {
+            isMutating: () => number
+          }
+      : Actions[Key] extends Record<string, unknown>
+        ? ClientUtils<Actions[Key]>
+        : never
     : never
-  : never
 } & {
   invalidate: () => Promise<void>
 }
@@ -27,9 +28,10 @@ export const createClientUtils = <Actions extends Record<string, unknown>>(
     {},
     {
       get: <Input>(_: unknown, key: string) =>
-        key === 'invalidate' ?
-          (input?: Input) => queryClient.invalidateQueries({ queryKey: [...path, input].filter(Boolean) })
-        : key === 'isMutating' ? () => queryClient.isMutating({ mutationKey: path })
-        : createClientUtils(actions, queryClient, [...path, key]),
+        key === 'invalidate'
+          ? (input?: Input) => queryClient.invalidateQueries({ queryKey: [...path, input].filter(Boolean) })
+          : key === 'isMutating'
+            ? () => queryClient.isMutating({ mutationKey: path })
+            : createClientUtils(actions, queryClient, [...path, key]),
     },
   ) as ClientUtils<Actions>

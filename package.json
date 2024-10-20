@@ -1,11 +1,7 @@
 {
   "name": "@yangcurve/actions",
   "description": "Server Action wrapper inspired by trpc.",
-  "keywords": [
-    "nextjs",
-    "server-action",
-    "tanstack-query"
-  ],
+  "keywords": ["nextjs", "server-action", "tanstack-query"],
   "version": "0.1.50",
   "license": "MIT",
   "author": "yangcurve <utsu0621@gmail.com>",
@@ -15,17 +11,13 @@
   "types": "./dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "config": "bun build configs/*.config.ts --outdir ./ -e '*'",
+    "prebuild": "bun run lint",
     "build": "tsup src/index.ts --format cjs,esm --dts",
-    "format": "bun run config && prettier -w .",
-    "lint": "bun run format && eslint . --fix"
+    "lint": "biome check --fix --unsafe"
   },
   "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "eslint": "^9.13.0",
-    "prettier": "^3.3.3",
-    "tsup": "^8.3.0",
-    "typescript-eslint": "^8.10.0"
+    "@biomejs/biome": "^1.9.4",
+    "tsup": "^8.3.0"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.59.15",

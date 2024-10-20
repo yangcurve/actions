@@ -1,5 +1,4 @@
 # Actions
-
 Server Action wrapper inspired by trpc.
 
 ## Installation
