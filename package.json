@@ -6,7 +6,7 @@
     "server-action",
     "tanstack-query"
   ],
-  "version": "0.1.45",
+  "version": "0.1.46",
   "license": "MIT",
   "author": "yangcurve <utsu0621@gmail.com>",
   "repository": "github:yangcurve/actions",

@@ -11,7 +11,7 @@ export const createCaller = <Actions extends Record<string, unknown>>(
     {
       get: <Input, Output>(_: unknown, key: string) => {
         // @ts-expect-error ...
-        const action = path.reduce((acc, key) => acc[key], actions) as unknown
+        const action = [...path, key].reduce((acc, key) => acc[key], actions) as unknown
         if (typeof action === 'function') return async (input: Input) => SuperJSON.parse(await action(input)) as Output
 
         return createCaller(actions, [...path, key])
