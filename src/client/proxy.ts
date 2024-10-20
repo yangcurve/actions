@@ -7,25 +7,35 @@ import {
   useMutation,
   useQuery,
 } from '@tanstack/react-query'
-import type { Action } from '../types'
+import type { Action, ActionType } from '../types'
 
-type ClientQueryAction<Input, Output> = (
-  input: Input,
-  options?: Omit<UseQueryOptions<Output>, 'queryFn' | 'queryKey'>,
+type ClientQueryAction<
+  Info extends {
+    input: unknown
+    output: unknown
+  },
+> = (
+  input: Info['input'],
+  options?: Omit<UseQueryOptions<Info['output']>, 'queryFn' | 'queryKey'>,
   queryClient?: QueryClient,
-) => UseQueryResult<Output>
+) => UseQueryResult<Info['output']>
 
-type ClientMutationAction<Input, Output> = (
-  options?: Omit<UseMutationOptions<Output, Error, Input>, 'mutationFn' | 'mutationKey'>,
+type ClientMutationAction<
+  Info extends {
+    input: unknown
+    output: unknown
+  },
+> = (
+  options?: Omit<UseMutationOptions<Info['output'], Error, Info['input']>, 'mutationFn' | 'mutationKey'>,
   queryClient?: QueryClient,
-) => UseMutationResult<Output, Error, Input>
+) => UseMutationResult<Info['output'], Error, Info['input']>
 
 export type ClientProxy<Actions extends Record<string, unknown>> = {
   [Key in keyof Actions]: Key extends string
-    ? Actions[Key] extends Action<infer Type, infer Input, infer Output>
+    ? Actions[Key] extends Action<{ type: infer Type extends ActionType; input: infer Input; output: infer Output }>
       ? Type extends 'query'
-        ? { useQuery: ClientQueryAction<Input, Output> }
-        : { useMutation: ClientMutationAction<Input, Output> }
+        ? { useQuery: ClientQueryAction<{ input: Input; output: Output }> }
+        : { useMutation: ClientMutationAction<{ input: Input; output: Output }> }
       : Actions[Key] extends Record<string, unknown>
         ? ClientProxy<Actions[Key]>
         : never
@@ -50,7 +60,7 @@ export const createClientProxy = <Actions extends Record<string, unknown>>(
                   queryKey: [...path, input],
                 },
                 queryClient,
-              )) as ClientQueryAction<Input, Output>)
+              )) as ClientQueryAction<{ input: Input; output: Output }>)
           : key === 'useMutation'
             ? (((options, queryClient) =>
                 useMutation(
@@ -61,7 +71,7 @@ export const createClientProxy = <Actions extends Record<string, unknown>>(
                     mutationKey: path,
                   },
                   queryClient,
-                )) as ClientMutationAction<Input, Output>)
+                )) as ClientMutationAction<{ input: Input; output: Output }>)
             : createClientProxy(actions, ...path, key),
     },
   ) as ClientProxy<Actions>

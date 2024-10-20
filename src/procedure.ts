@@ -5,7 +5,7 @@ type Resolver<Context, Input, Output> = (param: { ctx: Context; input: Input }) 
 
 type ActionBuilder<Type extends ActionType, Context, Schema extends z.ZodType> = <Output>(
   resolver: Resolver<Context, z.infer<Schema>, Output>,
-) => Action<Type, z.input<Schema>, Output>
+) => Action<{ type: Type; input: z.input<Schema>; output: Output }>
 
 type Middleware<Context, NewContext> = (ctx: Context) => NewContext | Promise<NewContext>
 

@@ -1,5 +1,11 @@
 export type ActionType = 'query' | 'mutation'
-export type Action<_Type extends ActionType, Input, Output> = (input: Input) => Promise<Output>
+export type Action<
+  Info extends {
+    type: ActionType
+    input: unknown
+    output: unknown
+  },
+> = (input: Info['input']) => Promise<Info['output']>
 
 export type Transformer = {
   // biome-ignore lint/suspicious/noExplicitAny: ...

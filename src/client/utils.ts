@@ -3,10 +3,10 @@ import type { Action } from '../types'
 
 export type ClientUtils<Actions extends Record<string, unknown>> = {
   [Key in keyof Actions]: Key extends string
-    ? Actions[Key] extends Action<infer Type, infer Input, unknown>
-      ? Type extends 'query'
+    ? Actions[Key] extends Action<infer Info>
+      ? Info['type'] extends 'query'
         ? {
-            invalidate: (input?: Input) => Promise<void>
+            invalidate: (input?: Info['input']) => Promise<void>
           }
         : {
             isMutating: () => number
