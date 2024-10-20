@@ -22,7 +22,7 @@ export const { procedure, createCaller } = initActions({
   createContext: async () => ({
     db,
     session: await auth(),
-  })
+  }),
 })
 
 export const authorizedProcedure = procedure.use((ctx) => {
