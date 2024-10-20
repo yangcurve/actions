@@ -5,7 +5,7 @@ Server Action wrapper inspired by trpc.
 ## Installation
 
 ```sh
-bun add @yangcurve/actions
+bun add @yangcurve/actions @tanstack/react-query superjson zod
 ```
 
 ## Usage
@@ -17,12 +17,14 @@ bun add @yangcurve/actions
 import { auth } from '@/server/auth'
 import { db } from '@/server/db'
 import { initActions } from '@yangcurve/actions'
+import SuperJSON from 'superjson'
 
 export const { procedure, createCaller } = initActions({
   createContext: async () => ({
     db,
     session: await auth(),
   }),
+  transformer: SuperJSON,
 })
 
 export const authorizedProcedure = procedure.use((ctx) => {
