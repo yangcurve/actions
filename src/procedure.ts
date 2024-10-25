@@ -7,10 +7,27 @@ type ActionBuilder<Type extends ActionType, Context, Schema extends z.ZodType> =
   resolver: Resolver<Context, z.infer<Schema>, Output>,
 ) => Action<{ type: Type; input: z.input<Schema>; output: Output }>
 
-type Middleware<Context, NewContext> = (ctx: Context) => NewContext | Promise<NewContext>
+type MiddlewareResult<
+  Info extends {
+    ctx: unknown
+  },
+> = {
+  __ctx: Info['ctx']
+  __brand: 'MiddlewareResult'
+}
+
+type Middleware<Context> = (params: {
+  ctx: Context
+  next: {
+    (): Promise<MiddlewareResult<{ ctx: Context }>>
+    <NewContext>(newCtx: NewContext): Promise<MiddlewareResult<{ ctx: NewContext }>>
+  }
+}) => ReturnType<typeof params.next>
 
 type Procedure<Context> = {
-  use: <NewContext>(middleware: Middleware<Context, NewContext>) => Procedure<NewContext>
+  use: <M extends Middleware<Context>, NewContext extends Awaited<ReturnType<M>>['__ctx']>(
+    middleware: M,
+  ) => Procedure<NewContext>
   query: ActionBuilder<'query', Context, z.ZodVoid>
   mutation: ActionBuilder<'mutation', Context, z.ZodVoid>
   input: <Schema extends z.ZodType>(
@@ -24,27 +41,39 @@ type Procedure<Context> = {
 type ProcedureBuilder = <Context>(options: {
   createContext?: () => Context | Promise<Context>
   transformer?: Transformer
+  // biome-ignore lint/suspicious/noExplicitAny: ...
+  middlewares?: Middleware<any>[]
 }) => Procedure<Context>
 
-export const createProcedure: ProcedureBuilder = ({ createContext = () => new Promise(() => {}), transformer }) => {
+export const createProcedure: ProcedureBuilder = ({
+  createContext = () => new Promise(() => {}),
+  transformer,
+  middlewares = [],
+}) => {
   type Context = Awaited<ReturnType<typeof createContext>>
 
   const getActionBuilder =
     <Type extends ActionType, Schema extends z.ZodType>(Schema: Schema): ActionBuilder<Type, Context, Schema> =>
     (resolver) =>
     async (input) => {
-      const output = await resolver({
-        ctx: await createContext(),
-        input: Schema.parse(input) as z.infer<typeof Schema>,
-      })
+      const invokeMiddlewares = async (ctx: Context, ...middlewares: Middleware<Context>[]) =>
+        middlewares.length === 0
+          ? await resolver({ ctx, input: Schema.parse(input) })
+          : await (middlewares[0] as Middleware<Context>)({
+              ctx,
+              // biome-ignore lint/suspicious/noExplicitAny: ...
+              next: async (newCtx?: any) => (await invokeMiddlewares(newCtx ?? ctx, ...middlewares.slice(1))) as any,
+            })
+      const output = await invokeMiddlewares(await createContext(), ...middlewares)
       return transformer?.stringify(output) ?? output
     }
 
   return {
-    use: (middleware) =>
+    use: <M extends Middleware<Context>, NewContext = ReturnType<M>>(middleware: M) =>
       createProcedure({
-        createContext: async () => await middleware(await createContext()),
+        createContext: createContext as () => Promise<NewContext>,
         transformer,
+        middlewares: [...middlewares, middleware],
       }),
     query: getActionBuilder(z.void()),
     mutation: getActionBuilder(z.void()),

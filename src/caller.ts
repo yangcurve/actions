@@ -1,6 +1,6 @@
 import type { Transformer } from './types'
 
-export type Caller<Actions extends Record<string, unknown>> = Actions & { __brand: 'caller' }
+export type Caller<Actions extends Record<string, unknown>> = Actions & { __brand: 'Caller' }
 
 export const createCallerFactory = ({ transformer }: { transformer?: Transformer }) => {
   const createCaller = <Actions extends Record<string, unknown>>(

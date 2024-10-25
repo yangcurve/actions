@@ -25,12 +25,12 @@ export const { procedure, createCaller } = initActions({
   }),
 })
 
-export const authorizedProcedure = procedure.use((ctx) => {
+export const authorizedProcedure = procedure.use(({ ctx, next }) => {
   if (!ctx.session?.user) throw new Error('UNAUTHORIZED')
-  return {
+  return next({
     ...ctx,
     session: ctx.session,
-  }
+  })
 })
 ```
 
