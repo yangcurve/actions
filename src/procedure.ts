@@ -39,47 +39,55 @@ type Procedure<Context> = {
 }
 
 type ProcedureBuilder = <Context>(options: {
-  createContext?: () => Context | Promise<Context>
-  transformer?: Transformer
+  createContext: () => Context | Promise<Context>
   // biome-ignore lint/suspicious/noExplicitAny: ...
-  middlewares?: Middleware<any>[]
+  middlewares: Middleware<any>[]
 }) => Procedure<Context>
 
-export const createProcedure: ProcedureBuilder = ({
-  createContext = () => new Promise(() => {}),
-  transformer,
-  middlewares = [],
-}) => {
-  type Context = Awaited<ReturnType<typeof createContext>>
+export const createProcedureFactory = ({ transformer }: { transformer?: Transformer }) => {
+  const __createProcedure: ProcedureBuilder = ({ createContext, middlewares }) => {
+    type Context = Awaited<ReturnType<typeof createContext>>
 
-  const getActionBuilder =
-    <Type extends ActionType, Schema extends z.ZodType>(Schema: Schema): ActionBuilder<Type, Context, Schema> =>
-    (resolver) =>
-    async (input) => {
-      const invokeMiddlewares = async (ctx: Context, ...middlewares: Middleware<Context>[]) =>
-        middlewares.length === 0
-          ? await resolver({ ctx, input: Schema.parse(input) })
-          : await (middlewares[0] as Middleware<Context>)({
-              ctx,
-              // biome-ignore lint/suspicious/noExplicitAny: ...
-              next: async (newCtx?: any) => (await invokeMiddlewares(newCtx ?? ctx, ...middlewares.slice(1))) as any,
-            })
-      const output = await invokeMiddlewares(await createContext(), ...middlewares)
-      return transformer?.stringify(output) ?? output
-    }
+    const getActionBuilder =
+      <Type extends ActionType, Schema extends z.ZodType>(Schema: Schema): ActionBuilder<Type, Context, Schema> =>
+        (resolver) =>
+          async (input) => {
+            const invokeMiddlewares = async (ctx: Context, ...middlewares: Middleware<Context>[]) =>
+              middlewares.length === 0
+                ? await resolver({ ctx, input: Schema.parse(input) })
+                : await (middlewares[0] as Middleware<Context>)({
+                  ctx,
+                  // biome-ignore lint/suspicious/noExplicitAny: ...
+                  next: async (newCtx?: any) => (await invokeMiddlewares(newCtx ?? ctx, ...middlewares.slice(1))) as any,
+                })
+            const output = await invokeMiddlewares(await createContext(), ...middlewares)
+            return transformer?.stringify(output) ?? output
+          }
 
-  return {
-    use: <M extends Middleware<Context>, NewContext = ReturnType<M>>(middleware: M) =>
-      createProcedure({
-        createContext: createContext as () => Promise<NewContext>,
-        transformer,
-        middlewares: [...middlewares, middleware],
+    return {
+      use: <M extends Middleware<Context>, NewContext = ReturnType<M>>(middleware: M) =>
+        __createProcedure({
+          createContext: createContext as () => Promise<NewContext>,
+          middlewares: [...middlewares, middleware],
+        }),
+      query: getActionBuilder(z.void()),
+      mutation: getActionBuilder(z.void()),
+      input: (Schema) => ({
+        query: getActionBuilder(Schema),
+        mutation: getActionBuilder(Schema),
       }),
-    query: getActionBuilder(z.void()),
-    mutation: getActionBuilder(z.void()),
-    input: (Schema) => ({
-      query: getActionBuilder(Schema),
-      mutation: getActionBuilder(Schema),
-    }),
+    }
   }
+
+  const createProcedure = <Context>({
+    createContext,
+  }: {
+    createContext?: () => Context | Promise<Context>
+  } = {}) =>
+    __createProcedure<Context>({
+      createContext: createContext ?? (() => new Promise(() => { })),
+      middlewares: [],
+    })
+
+  return createProcedure
 }
