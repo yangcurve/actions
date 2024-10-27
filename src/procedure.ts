@@ -50,19 +50,19 @@ export const createProcedureFactory = ({ transformer }: { transformer?: Transfor
 
     const getActionBuilder =
       <Type extends ActionType, Schema extends z.ZodType>(Schema: Schema): ActionBuilder<Type, Context, Schema> =>
-        (resolver) =>
-          async (input) => {
-            const invokeMiddlewares = async (ctx: Context, ...middlewares: Middleware<Context>[]) =>
-              middlewares.length === 0
-                ? await resolver({ ctx, input: Schema.parse(input) })
-                : await (middlewares[0] as Middleware<Context>)({
-                  ctx,
-                  // biome-ignore lint/suspicious/noExplicitAny: ...
-                  next: async (newCtx?: any) => (await invokeMiddlewares(newCtx ?? ctx, ...middlewares.slice(1))) as any,
-                })
-            const output = await invokeMiddlewares(await createContext(), ...middlewares)
-            return transformer?.stringify(output) ?? output
-          }
+      (resolver) =>
+      async (input) => {
+        const invokeMiddlewares = async (ctx: Context, ...middlewares: Middleware<Context>[]) =>
+          middlewares.length === 0
+            ? await resolver({ ctx, input: Schema.parse(input) })
+            : await (middlewares[0] as Middleware<Context>)({
+                ctx,
+                // biome-ignore lint/suspicious/noExplicitAny: ...
+                next: async (newCtx?: any) => (await invokeMiddlewares(newCtx ?? ctx, ...middlewares.slice(1))) as any,
+              })
+        const output = await invokeMiddlewares(await createContext(), ...middlewares)
+        return transformer?.stringify(output) ?? output
+      }
 
     return {
       use: <M extends Middleware<Context>, NewContext = ReturnType<M>>(middleware: M) =>
@@ -85,7 +85,7 @@ export const createProcedureFactory = ({ transformer }: { transformer?: Transfor
     createContext?: () => Context | Promise<Context>
   } = {}) =>
     __createProcedure<Context>({
-      createContext: createContext ?? (() => new Promise(() => { })),
+      createContext: createContext ?? (() => new Promise(() => {})),
       middlewares: [],
     })
 

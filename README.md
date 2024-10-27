@@ -27,7 +27,7 @@ export const { createProcedure, createCaller, createClientCaller } = initActions
 ### Create procedures
 
 ```ts
-// procedure.ts
+// procedures.ts
 import { auth } from '@/server/auth'
 import { db } from '@/server/db'
 import { createProcedure } from './init'
@@ -53,7 +53,7 @@ export const authorizedProcedure = procedure.use(({ ctx, next }) => {
 // count.ts
 'use server'
 
-import { procedure } from './procedure'
+import { procedure } from './procedures'
 import { z } from 'zod'
 
 let count = 0
@@ -66,7 +66,7 @@ export const set = procedure.input(z.number()).mutation(({ input }) => (state = 
 
 ```ts
 // caller.ts
-import { type InferActionInput, type InferActionOutput } from '@yangcurve/actions'
+import type { InferActionInput, InferActionOutput } from '@yangcurve/actions'
 import * as count from './count'
 import { createCaller, createClientCaller } from './init'
 
