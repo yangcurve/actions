@@ -19,7 +19,7 @@ import { db } from '@/server/db'
 import { initActions } from '@yangcurve/actions'
 import SuperJSON from 'superjson'
 
-export const { createProcedure, createCaller, createClientCaller } = initActions({
+export const { createProcedure, createCaller } = initActions({
   transformer: SuperJSON // optional
 })
 ```
@@ -66,9 +66,9 @@ export const set = procedure.input(z.number()).mutation(({ input }) => (state = 
 
 ```ts
 // caller.ts
-import type { InferActionInput, InferActionOutput } from '@yangcurve/actions'
+import { type InferActionInput, type InferActionOutput, createClientCaller } from '@yangcurve/actions'
 import * as count from './count'
-import { createCaller, createClientCaller } from './init'
+import { createCaller } from './init'
 
 export const actions = createCaller({ count }) // server side caller
 export const api = createClientCaller(actions) // client side caller
