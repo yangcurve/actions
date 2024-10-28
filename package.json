@@ -2,7 +2,7 @@
   "name": "@yangcurve/actions",
   "description": "Server Action wrapper inspired by trpc.",
   "keywords": ["nextjs", "server-action", "tanstack-query"],
-  "version": "0.2.5",
+  "version": "0.2.6",
   "license": "MIT",
   "author": "yangcurve <utsu0621@gmail.com>",
   "repository": "github:yangcurve/actions",
