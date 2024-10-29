@@ -72,9 +72,9 @@ export const createProcedureFactory = ({ transformer }: { transformer?: Transfor
         }),
       query: getActionBuilder<'query', z.ZodVoid>(z.void()),
       mutation: getActionBuilder<'mutation', z.ZodVoid>(z.void()),
-      input: (Schema) => ({
-        query: getActionBuilder(Schema),
-        mutation: getActionBuilder(Schema),
+      input: <Schema extends z.ZodType>(Schema: Schema) => ({
+        query: getActionBuilder<'query', Schema>(Schema),
+        mutation: getActionBuilder<'mutation', Schema>(Schema),
       }),
     }
   }
