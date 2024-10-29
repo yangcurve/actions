@@ -3,9 +3,15 @@ import { z } from 'zod'
 
 type Resolver<Context, Input, Output> = (param: { ctx: Context; input: Input }) => Output | Promise<Output>
 
-type ActionBuilder<Type extends ActionType, Context, Schema extends z.ZodType> = <Output>(
-  resolver: Resolver<Context, z.infer<Schema>, Output>,
-) => Action<{ type: Type; input: z.input<Schema>; output: Output }>
+type ActionBuilder<
+  Type extends ActionType,
+  Context,
+  Schema extends z.ZodType,
+  Infer = z.infer<Schema>,
+  Input = z.input<Schema>,
+> = <Output>(
+  resolver: Resolver<Context, Infer, Output>,
+) => Action<{ type: Type; input: undefined extends Input ? void | Input : Input; output: Output }>
 
 type MiddlewareResult<
   Info extends {
@@ -51,7 +57,7 @@ export const createProcedureFactory = ({ transformer }: { transformer?: Transfor
     const getActionBuilder =
       <Type extends ActionType, Schema extends z.ZodType>(Schema: Schema): ActionBuilder<Type, Context, Schema> =>
       (resolver) =>
-      async (input?: z.input<Schema>) => {
+      async (input) => {
         const invokeMiddlewares = async (ctx: Context, ...middlewares: Middleware<Context>[]) =>
           middlewares.length === 0
             ? await resolver({ ctx, input: Schema.parse(input) })
@@ -70,11 +76,11 @@ export const createProcedureFactory = ({ transformer }: { transformer?: Transfor
           createContext: createContext as () => Promise<NewContext>,
           middlewares: [...middlewares, middleware],
         }),
-      query: getActionBuilder<'query', z.ZodVoid>(z.void()),
-      mutation: getActionBuilder<'mutation', z.ZodVoid>(z.void()),
+      query: getActionBuilder(z.void()),
+      mutation: getActionBuilder(z.void()),
       input: <Schema extends z.ZodType>(Schema: Schema) => ({
-        query: getActionBuilder<'query', Schema>(Schema),
-        mutation: getActionBuilder<'mutation', Schema>(Schema),
+        query: getActionBuilder(Schema),
+        mutation: getActionBuilder(Schema),
       }),
     }
   }
