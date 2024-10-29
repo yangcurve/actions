@@ -1,5 +1,5 @@
-import type { Caller } from './caller'
-import type { Action } from './types'
+import { type Caller } from './caller'
+import { type Action } from './types'
 
 export type InferActionInput<Actions extends Caller<Record<string, unknown>>> = Omit<
   {

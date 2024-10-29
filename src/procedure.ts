@@ -1,5 +1,5 @@
+import { type Action, type ActionType, type Transformer } from './types'
 import { z } from 'zod'
-import type { Action, ActionType, Transformer } from './types'
 
 type Resolver<Context, Input, Output> = (param: { ctx: Context; input: Input }) => Output | Promise<Output>
 
@@ -25,7 +25,7 @@ type Middleware<Context> = (params: {
 }) => ReturnType<typeof params.next>
 
 type Procedure<Context> = {
-  use: <M extends Middleware<Context>, NewContext extends Awaited<ReturnType<M>>['__ctx']>(
+  use: <M extends Middleware<Context>, NewContext = Awaited<ReturnType<M>>['__ctx']>(
     middleware: M,
   ) => Procedure<NewContext>
   query: ActionBuilder<'query', Context, z.ZodVoid>
@@ -40,7 +40,7 @@ type Procedure<Context> = {
 
 type ProcedureBuilder = <Context>(options: {
   createContext: () => Context | Promise<Context>
-  // biome-ignore lint/suspicious/noExplicitAny: ...
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   middlewares: Middleware<any>[]
 }) => Procedure<Context>
 
@@ -51,13 +51,13 @@ export const createProcedureFactory = ({ transformer }: { transformer?: Transfor
     const getActionBuilder =
       <Type extends ActionType, Schema extends z.ZodType>(Schema: Schema): ActionBuilder<Type, Context, Schema> =>
       (resolver) =>
-      async (input) => {
+      async (input?: z.input<Schema>) => {
         const invokeMiddlewares = async (ctx: Context, ...middlewares: Middleware<Context>[]) =>
           middlewares.length === 0
             ? await resolver({ ctx, input: Schema.parse(input) })
             : await (middlewares[0] as Middleware<Context>)({
                 ctx,
-                // biome-ignore lint/suspicious/noExplicitAny: ...
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 next: async (newCtx?: any) => (await invokeMiddlewares(newCtx ?? ctx, ...middlewares.slice(1))) as any,
               })
         const output = await invokeMiddlewares(await createContext(), ...middlewares)
@@ -70,8 +70,8 @@ export const createProcedureFactory = ({ transformer }: { transformer?: Transfor
           createContext: createContext as () => Promise<NewContext>,
           middlewares: [...middlewares, middleware],
         }),
-      query: getActionBuilder(z.void()),
-      mutation: getActionBuilder(z.void()),
+      query: getActionBuilder<'query', z.ZodVoid>(z.void()),
+      mutation: getActionBuilder<'mutation', z.ZodVoid>(z.void()),
       input: (Schema) => ({
         query: getActionBuilder(Schema),
         mutation: getActionBuilder(Schema),

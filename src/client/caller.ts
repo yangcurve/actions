@@ -1,7 +1,7 @@
-import { useQueryClient } from '@tanstack/react-query'
-import type { Caller } from '../caller'
+import { type Caller } from '../caller'
 import { type ClientProxy, createClientProxy } from './proxy'
 import { type ClientUtils, createClientUtils } from './utils'
+import { useQueryClient } from '@tanstack/react-query'
 
 type ClientCaller<Actions extends Record<string, unknown>> = ClientProxy<Actions> & {
   useUtils: () => ClientUtils<Actions>

@@ -20,7 +20,7 @@ import { initActions } from '@yangcurve/actions'
 import SuperJSON from 'superjson'
 
 export const { createProcedure, createCaller, createClientCaller } = initActions({
-  transformer: SuperJSON // optional
+  transformer: SuperJSON, // optional
 })
 ```
 
@@ -28,9 +28,9 @@ export const { createProcedure, createCaller, createClientCaller } = initActions
 
 ```ts
 // procedures.ts
+import { createProcedure } from './init'
 import { auth } from '@/server/auth'
 import { db } from '@/server/db'
-import { createProcedure } from './init'
 
 const createContext = async () => ({
   db,
@@ -66,9 +66,9 @@ export const set = procedure.input(z.number()).mutation(({ input }) => (state = 
 
 ```ts
 // caller.ts
-import type { InferActionInput, InferActionOutput } from '@yangcurve/actions'
 import * as count from './count'
 import { createCaller, createClientCaller } from './init'
+import type { InferActionInput, InferActionOutput } from '@yangcurve/actions'
 
 export const actions = createCaller({ count }) // server side caller
 export const api = createClientCaller(actions) // client side caller

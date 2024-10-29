@@ -1,3 +1,4 @@
+import { type Action, type ActionType } from '../types'
 import {
   type QueryClient,
   type UseMutationOptions,
@@ -7,7 +8,6 @@ import {
   useMutation,
   useQuery,
 } from '@tanstack/react-query'
-import type { Action, ActionType } from '../types'
 
 type ClientQueryAction<
   Info extends {
