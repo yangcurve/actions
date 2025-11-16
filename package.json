@@ -1,0 +1,19 @@
+{
+  "name": "@repo/actions",
+  "repository": "github:yangcurve/actions",
+  "author": "yangcurve <utsu0621@gmail.com>",
+  "main": "src/index.ts",
+  "version": "0.3.0",
+  "scripts": {
+    "lint": "eslint --fix"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@yangcurve/eslint": "^0.1.16",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.90.9",
+    "zod": "^4.1.12"
+  }
+}

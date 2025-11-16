@@ -1,0 +1,8 @@
+node_modules
+.github
+configs
+**/*.config.js
+src
+tsconfig.json
+bun.lockb
+.DS_Store
