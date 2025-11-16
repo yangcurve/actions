@@ -13,7 +13,7 @@ lerna-debug.log*
 # Caches
 
 .cache
-bun.lockb
+bun.lock
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 

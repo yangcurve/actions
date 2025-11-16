@@ -1,7 +1,5 @@
 node_modules
-.github
-configs
-**/*.config.js
 tsconfig.json
-bun.lockb
+eslint.config.ts
+bun.lock
 .DS_Store
