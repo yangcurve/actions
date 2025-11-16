@@ -1,5 +1,5 @@
 {
-  "name": "@repo/actions",
+  "name": "@yangcurve/actions",
   "repository": "github:yangcurve/actions",
   "author": "yangcurve <utsu0621@gmail.com>",
   "main": "src/index.ts",
